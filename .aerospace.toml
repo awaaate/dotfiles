@@ -1,0 +1,307 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# AEROSPACE CONFIGURATION
+# Optimized for productivity - Hyper key window management
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────────────
+# STARTUP
+# ───────────────────────────────────────────────────────────────────────────
+after-login-command = []
+after-startup-command = []
+
+start-at-login = true
+
+# Notify sketchybar on workspace change
+exec-on-workspace-change = [
+  '/bin/bash', '-c',
+  'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE'
+]
+
+# ───────────────────────────────────────────────────────────────────────────
+# BEHAVIOR
+# ───────────────────────────────────────────────────────────────────────────
+enable-normalization-flatten-containers = true
+enable-normalization-opposite-orientation-for-nested-containers = true
+accordion-padding = 30
+default-root-container-layout = 'tiles'
+default-root-container-orientation = 'auto'
+
+# Mouse follows focus
+on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+on-focus-changed = 'move-mouse window-lazy-center'
+
+# Unhide hidden apps (disable cmd-h)
+automatically-unhide-macos-hidden-apps = true
+
+# ───────────────────────────────────────────────────────────────────────────
+# KEY MAPPING
+# ───────────────────────────────────────────────────────────────────────────
+[key-mapping]
+preset = 'qwerty'
+
+# ───────────────────────────────────────────────────────────────────────────
+# GAPS - Minimal, sin espacio extra con sketchybar
+# ───────────────────────────────────────────────────────────────────────────
+[gaps]
+inner.horizontal = 4
+inner.vertical = 4
+outer.left = 4
+outer.bottom = 8
+outer.top = 8
+outer.right = 4
+
+# ═══════════════════════════════════════════════════════════════════════════
+# MAIN MODE - Hyper = Ctrl+Cmd+Opt (definido en Karabiner)
+# ═══════════════════════════════════════════════════════════════════════════
+[mode.main.binding]
+
+# ───────────────────────────────────────────────────────────────────────────
+# LAUNCHERS (Hyper + número → abrir app + ir a workspace)
+# ───────────────────────────────────────────────────────────────────────────
+alt-cmd-ctrl-1 = ['exec-and-forget open -a "Google Chrome"', 'workspace B']
+alt-cmd-ctrl-2 = ['exec-and-forget open -a "Ghostty"', 'workspace T']
+alt-cmd-ctrl-3 = ['exec-and-forget open -a "Cursor"', 'workspace C']
+alt-cmd-ctrl-4 = ['exec-and-forget open -a "Finder"', 'workspace F']
+alt-cmd-ctrl-5 = ['exec-and-forget open -a "Microsoft Teams"', 'workspace M']
+alt-cmd-ctrl-6 = ['exec-and-forget open -a "WhatsApp"', 'workspace W']
+
+# ───────────────────────────────────────────────────────────────────────────
+# WORKSPACES (Hyper + 7-0 → ir a workspace)
+# ───────────────────────────────────────────────────────────────────────────
+alt-cmd-ctrl-7 = 'workspace N'
+alt-cmd-ctrl-8 = 'workspace S'
+alt-cmd-ctrl-9 = 'workspace D'
+alt-cmd-ctrl-0 = 'workspace X'
+
+# ───────────────────────────────────────────────────────────────────────────
+# MOVE TO WORKSPACE (Hyper + Shift + número)
+# ───────────────────────────────────────────────────────────────────────────
+alt-cmd-ctrl-shift-1 = 'move-node-to-workspace B'
+alt-cmd-ctrl-shift-2 = 'move-node-to-workspace T'
+alt-cmd-ctrl-shift-3 = 'move-node-to-workspace C'
+alt-cmd-ctrl-shift-4 = 'move-node-to-workspace F'
+alt-cmd-ctrl-shift-5 = 'move-node-to-workspace M'
+alt-cmd-ctrl-shift-6 = 'move-node-to-workspace W'
+alt-cmd-ctrl-shift-7 = 'move-node-to-workspace N'
+alt-cmd-ctrl-shift-8 = 'move-node-to-workspace S'
+alt-cmd-ctrl-shift-9 = 'move-node-to-workspace D'
+alt-cmd-ctrl-shift-0 = 'move-node-to-workspace X'
+
+# ───────────────────────────────────────────────────────────────────────────
+# WINDOW FOCUS (Hyper + hjkl)
+# ───────────────────────────────────────────────────────────────────────────
+alt-cmd-ctrl-h = 'focus left'
+alt-cmd-ctrl-j = 'focus down'
+alt-cmd-ctrl-k = 'focus up'
+alt-cmd-ctrl-l = 'focus right'
+
+# ───────────────────────────────────────────────────────────────────────────
+# WINDOW MOVE (Hyper + Shift + hjkl)
+# ───────────────────────────────────────────────────────────────────────────
+alt-cmd-ctrl-shift-h = 'move left'
+alt-cmd-ctrl-shift-j = 'move down'
+alt-cmd-ctrl-shift-k = 'move up'
+alt-cmd-ctrl-shift-l = 'move right'
+
+# ───────────────────────────────────────────────────────────────────────────
+# RESIZE (Hyper + flechas)
+# ───────────────────────────────────────────────────────────────────────────
+alt-cmd-ctrl-left = 'resize width -50'
+alt-cmd-ctrl-right = 'resize width +50'
+alt-cmd-ctrl-up = 'resize height +50'
+alt-cmd-ctrl-down = 'resize height -50'
+
+# ───────────────────────────────────────────────────────────────────────────
+# LAYOUTS
+# ───────────────────────────────────────────────────────────────────────────
+alt-cmd-ctrl-f = 'fullscreen'
+alt-cmd-ctrl-t = 'layout floating tiling'
+alt-slash = 'layout tiles horizontal vertical'
+alt-comma = 'layout accordion horizontal vertical'
+
+# ───────────────────────────────────────────────────────────────────────────
+# BALANCE & UTILITIES
+# ───────────────────────────────────────────────────────────────────────────
+alt-cmd-ctrl-b = 'balance-sizes'
+alt-cmd-ctrl-equal = 'balance-sizes'
+
+# ───────────────────────────────────────────────────────────────────────────
+# FOCUS NAVIGATION
+# ───────────────────────────────────────────────────────────────────────────
+alt-cmd-ctrl-n = 'focus --boundaries workspace --boundaries-action wrap-around-the-workspace dfs-next'
+alt-cmd-ctrl-p = 'focus --boundaries workspace --boundaries-action wrap-around-the-workspace dfs-prev'
+
+# ───────────────────────────────────────────────────────────────────────────
+# MULTI-MONITOR
+# ───────────────────────────────────────────────────────────────────────────
+alt-cmd-ctrl-leftSquareBracket = 'focus-monitor --wrap-around prev'
+alt-cmd-ctrl-rightSquareBracket = 'focus-monitor --wrap-around next'
+alt-cmd-ctrl-shift-leftSquareBracket = 'move-node-to-monitor --wrap-around prev'
+alt-cmd-ctrl-shift-rightSquareBracket = 'move-node-to-monitor --wrap-around next'
+
+# ───────────────────────────────────────────────────────────────────────────
+# QUICK ACTIONS
+# ───────────────────────────────────────────────────────────────────────────
+alt-cmd-ctrl-q = 'close'
+alt-cmd-ctrl-r = 'reload-config'
+alt-tab = 'workspace-back-and-forth'
+alt-shift-tab = 'move-workspace-to-monitor --wrap-around next'
+
+# ───────────────────────────────────────────────────────────────────────────
+# SERVICE MODE
+# ───────────────────────────────────────────────────────────────────────────
+alt-cmd-ctrl-semicolon = 'mode service'
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SERVICE MODE
+# ═══════════════════════════════════════════════════════════════════════════
+[mode.service.binding]
+esc = ['reload-config', 'mode main']
+r = ['flatten-workspace-tree', 'mode main']
+f = ['layout floating tiling', 'mode main']
+b = ['balance-sizes', 'mode main']
+backspace = ['close-all-windows-but-current', 'mode main']
+
+# Join with direction
+h = ['join-with left', 'mode main']
+j = ['join-with down', 'mode main']
+k = ['join-with up', 'mode main']
+l = ['join-with right', 'mode main']
+
+# Swap windows
+shift-h = ['swap left', 'mode main']
+shift-j = ['swap down', 'mode main']
+shift-k = ['swap up', 'mode main']
+shift-l = ['swap right', 'mode main']
+
+# ═══════════════════════════════════════════════════════════════════════════
+# WINDOW RULES - AUTO ASSIGN APPS TO WORKSPACES
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Browser → B
+[[on-window-detected]]
+if.app-id = 'com.google.Chrome'
+run = 'move-node-to-workspace B'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.Safari'
+run = 'move-node-to-workspace B'
+
+[[on-window-detected]]
+if.app-id = 'company.thebrowser.Browser'
+run = 'move-node-to-workspace B'
+
+[[on-window-detected]]
+if.app-id = 'org.mozilla.firefox'
+run = 'move-node-to-workspace B'
+
+# Terminal → T
+[[on-window-detected]]
+if.app-id = 'com.mitchellh.ghostty'
+run = 'move-node-to-workspace T'
+
+[[on-window-detected]]
+if.app-id = 'com.googlecode.iterm2'
+run = 'move-node-to-workspace T'
+
+[[on-window-detected]]
+if.app-id = 'dev.warp.Warp-Stable'
+run = 'move-node-to-workspace T'
+
+# Code → C
+[[on-window-detected]]
+if.app-id = 'com.todesktop.230313mzl4w4u92'
+run = 'move-node-to-workspace C'
+
+[[on-window-detected]]
+if.app-id = 'com.microsoft.VSCode'
+run = 'move-node-to-workspace C'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.dt.Xcode'
+run = 'move-node-to-workspace C'
+
+# Finder → F
+[[on-window-detected]]
+if.app-id = 'com.apple.finder'
+run = 'move-node-to-workspace F'
+
+# Messages → M
+[[on-window-detected]]
+if.app-id = 'com.microsoft.teams2'
+run = 'move-node-to-workspace M'
+
+[[on-window-detected]]
+if.app-id = 'com.microsoft.teams'
+run = 'move-node-to-workspace M'
+
+[[on-window-detected]]
+if.app-id = 'com.tinyspeck.slackmacgap'
+run = 'move-node-to-workspace M'
+
+[[on-window-detected]]
+if.app-id = 'com.hnc.Discord'
+run = 'move-node-to-workspace M'
+
+# WhatsApp → W
+[[on-window-detected]]
+if.app-id = 'net.whatsapp.WhatsApp'
+run = 'move-node-to-workspace W'
+
+[[on-window-detected]]
+if.app-id = 'ru.keepcoder.Telegram'
+run = 'move-node-to-workspace W'
+
+# Notes → N
+[[on-window-detected]]
+if.app-id = 'notion.id'
+run = 'move-node-to-workspace N'
+
+[[on-window-detected]]
+if.app-id = 'md.obsidian'
+run = 'move-node-to-workspace N'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.Notes'
+run = 'move-node-to-workspace N'
+
+# Spotify → S
+[[on-window-detected]]
+if.app-id = 'com.spotify.client'
+run = 'move-node-to-workspace S'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.Music'
+run = 'move-node-to-workspace S'
+
+# Design → D
+[[on-window-detected]]
+if.app-id = 'com.figma.Desktop'
+run = 'move-node-to-workspace D'
+
+[[on-window-detected]]
+if.app-id = 'com.bohemiancoding.sketch3'
+run = 'move-node-to-workspace D'
+
+# ═══════════════════════════════════════════════════════════════════════════
+# FLOATING BY DEFAULT
+# ═══════════════════════════════════════════════════════════════════════════
+[[on-window-detected]]
+if.app-id = 'com.apple.systempreferences'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.SystemPreferences'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.1password.1password'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.calculator'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.raycast.macos'
+run = 'layout floating'

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# ═══════════════════════════════════════════════════════════════════════════
+# BORDERS CONFIGURATION
+# TokyoNight Storm theme
+# ═══════════════════════════════════════════════════════════════════════════
+
+options=(
+  style=round
+  width=8.0
+  hidpi=on
+  active_color=0xff7aa2f7    # TokyoNight blue
+  inactive_color=0x333b4261  # TokyoNight muted
+)
+
+borders "${options[@]}"

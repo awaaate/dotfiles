@@ -1,0 +1,224 @@
+#!/bin/bash
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SKETCHYBAR CONFIG - Inspired by Nikolaidp24
+# ═══════════════════════════════════════════════════════════════════════════
+
+source "$CONFIG_DIR/colors.sh"
+source "$CONFIG_DIR/icons.sh"
+
+PLUGIN_DIR="$CONFIG_DIR/plugins"
+FONT="SF Pro"
+
+# ───────────────────────────────────────────────────────────────────────────
+# BAR
+# ───────────────────────────────────────────────────────────────────────────
+bar=(
+  height=40
+  color="$BAR_COLOR"
+  position=top
+  sticky=on
+  padding_right=10
+  padding_left=10
+  topmost=off
+  blur_radius=50
+  shadow=on
+)
+sketchybar --bar "${bar[@]}"
+
+# ───────────────────────────────────────────────────────────────────────────
+# DEFAULTS
+# ───────────────────────────────────────────────────────────────────────────
+defaults=(
+  updates=when_shown
+  icon.font="$FONT:Bold:14.0"
+  icon.color="$WHITE"
+  icon.padding_left=4
+  icon.padding_right=4
+  label.font="$FONT:Semibold:13.0"
+  label.color="$WHITE"
+  label.padding_left=4
+  label.padding_right=4
+  background.height=28
+  background.corner_radius=10
+)
+sketchybar --default "${defaults[@]}"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# LEFT - WORKSPACES
+# ═══════════════════════════════════════════════════════════════════════════
+
+sketchybar --add event aerospace_workspace_change
+
+# Add workspaces
+for ws in B T C F M W N S D X; do
+  sketchybar --add item "space.$ws" left \
+    --subscribe "space.$ws" aerospace_workspace_change \
+    --set "space.$ws" \
+      drawing=off \
+      background.color="$ITEM_BG" \
+      background.corner_radius=10 \
+      background.drawing=on \
+      background.border_color="$ACCENT" \
+      background.border_width=0 \
+      background.height=28 \
+      icon="$ws" \
+      icon.font="$FONT:Bold:13.0" \
+      icon.padding_left=10 \
+      icon.padding_right=4 \
+      label.font="sketchybar-app-font:Regular:14.0" \
+      label.padding_right=10 \
+      label.padding_left=2 \
+      label.y_offset=-1 \
+      click_script="aerospace workspace $ws" \
+      script="$PLUGIN_DIR/aerospace.sh $ws"
+done
+
+# Load icons on startup
+for ws in B T C F M W N S D X; do
+  apps=$(aerospace list-windows --workspace "$ws" 2>/dev/null | awk -F'|' '{gsub(/^ *| *$/, "", $2); print $2}' | sort -u)
+  
+  if [ -n "$apps" ]; then
+    sketchybar --set "space.$ws" drawing=on
+    
+    source "$CONFIG_DIR/plugins/icon_map.sh"
+    icon_strip=""
+    while IFS= read -r app; do
+      [ -z "$app" ] && continue
+      __icon_map "$app"
+      if [ -n "$icon_result" ] && [ "$icon_result" != ":default:" ]; then
+        icon_strip+="$icon_result"
+      fi
+    done <<< "$apps"
+    
+    sketchybar --set "space.$ws" label="$icon_strip"
+  fi
+done
+
+# Separator
+sketchybar --add item separator left \
+  --set separator \
+    icon="$CHEVRON" \
+    icon.font="$FONT:Heavy:16.0" \
+    icon.color="$GREY" \
+    icon.padding_left=10 \
+    icon.padding_right=6 \
+    label.drawing=off \
+    background.drawing=off
+
+# Front app
+sketchybar --add item front_app left \
+  --set front_app \
+    icon.drawing=off \
+    label.font="$FONT:Bold:13.0" \
+    label.color="$WHITE" \
+    background.drawing=off \
+    script="$PLUGIN_DIR/front_app.sh" \
+  --subscribe front_app front_app_switched
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CENTER - MEDIA
+# ═══════════════════════════════════════════════════════════════════════════
+
+sketchybar --add item media center \
+  --set media \
+    icon="$MUSIC_PLAY" \
+    icon.font="$FONT:Regular:18.0" \
+    icon.color="$GREEN" \
+    icon.padding_left=10 \
+    icon.padding_right=8 \
+    label.font="$FONT:Regular:12.0" \
+    label.color="$WHITE" \
+    label.max_chars=35 \
+    label.padding_right=10 \
+    scroll_texts=on \
+    background.color="$BG1" \
+    background.corner_radius=10 \
+    background.height=28 \
+    background.drawing=on \
+    drawing=off \
+    update_freq=5 \
+    script="$PLUGIN_DIR/media.sh" \
+    click_script="open -a Spotify"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# RIGHT - SYSTEM
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Clock
+sketchybar --add item clock right \
+  --set clock \
+    icon="$CLOCK" \
+    icon.font="$FONT:Regular:16.0" \
+    icon.color="$ACCENT" \
+    icon.padding_left=10 \
+    label.font="$FONT:Bold:12.0" \
+    label.padding_right=10 \
+    background.drawing=off \
+    update_freq=10 \
+    script="$PLUGIN_DIR/clock.sh"
+
+# Battery
+sketchybar --add item battery right \
+  --set battery \
+    icon.font="$FONT:Regular:18.0" \
+    icon.padding_left=8 \
+    label.font="$FONT:Regular:12.0" \
+    label.padding_right=8 \
+    background.drawing=off \
+    update_freq=120 \
+    updates=on \
+    script="$PLUGIN_DIR/battery.sh" \
+  --subscribe battery power_source_change system_woke
+
+# Volume
+sketchybar --add item volume right \
+  --set volume \
+    icon.font="$FONT:Regular:16.0" \
+    icon.padding_left=8 \
+    label.font="$FONT:Regular:12.0" \
+    label.padding_right=8 \
+    background.drawing=off \
+    script="$PLUGIN_DIR/volume.sh" \
+  --subscribe volume volume_change mouse.clicked
+
+# CPU
+sketchybar --add item cpu right \
+  --set cpu \
+    icon="$CPU" \
+    icon.font="$FONT:Regular:14.0" \
+    icon.color="$WHITE" \
+    icon.padding_left=8 \
+    label.font="$FONT:Regular:11.0" \
+    label.padding_right=4 \
+    background.drawing=off \
+    update_freq=5 \
+    script="$PLUGIN_DIR/cpu.sh"
+
+# CPU Graph
+sketchybar --add graph cpu_graph right 40 \
+  --set cpu_graph \
+    graph.color="$ACCENT" \
+    graph.fill_color="$ACCENT_TRANSPARENT" \
+    graph.line_width=1.0 \
+    background.color="$BG2" \
+    background.corner_radius=6 \
+    background.height=20 \
+    background.drawing=on \
+    label.drawing=off \
+    icon.drawing=off \
+    padding_right=8
+
+# Bracket around right items
+sketchybar --add bracket status cpu cpu_graph volume battery clock \
+  --set status \
+    background.color="$BG1" \
+    background.corner_radius=10 \
+    background.height=28 \
+    background.drawing=on
+
+# ═══════════════════════════════════════════════════════════════════════════
+# INIT
+# ═══════════════════════════════════════════════════════════════════════════
+
+sketchybar --update
