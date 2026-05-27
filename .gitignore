@@ -1,4 +1,6 @@
 .DS_Store
 *.log
 *.bak
+*.backup
 automatic_backups/
+.claude/

@@ -56,22 +56,23 @@ outer.right = 4
 [mode.main.binding]
 
 # ───────────────────────────────────────────────────────────────────────────
-# LAUNCHERS (Hyper + número → abrir app + ir a workspace)
+# LAUNCHERS (Hyper + número → workspace + abrir app)
+# 1=Browser 2=Terminal 3=Code 4=Codex 5=Claude 6=Messages 7=WhatsApp 8=OrbStack 9=Docs
 # ───────────────────────────────────────────────────────────────────────────
-alt-cmd-ctrl-1 = ['exec-and-forget open -a "Google Chrome"', 'workspace B']
-alt-cmd-ctrl-2 = ['exec-and-forget open -a "Ghostty"', 'workspace T']
-alt-cmd-ctrl-3 = ['exec-and-forget open -a "Cursor"', 'workspace C']
-alt-cmd-ctrl-4 = ['exec-and-forget open -a "Finder"', 'workspace F']
-alt-cmd-ctrl-5 = ['exec-and-forget open -a "Microsoft Teams"', 'workspace M']
-alt-cmd-ctrl-6 = ['exec-and-forget open -a "WhatsApp"', 'workspace W']
+alt-cmd-ctrl-1 = ['workspace B', 'exec-and-forget open -a "Google Chrome"']
+alt-cmd-ctrl-2 = ['workspace T', 'exec-and-forget open -a "Ghostty"']
+alt-cmd-ctrl-3 = ['workspace C', 'exec-and-forget open -a "Cursor"']
+alt-cmd-ctrl-4 = ['workspace X', 'exec-and-forget open -a "Codex"']
+alt-cmd-ctrl-5 = ['workspace K', 'exec-and-forget open -a "Claude"']
+alt-cmd-ctrl-6 = ['workspace M', 'exec-and-forget open -a "Microsoft Teams"']
+alt-cmd-ctrl-7 = ['workspace W', 'exec-and-forget open -a "WhatsApp"']
+alt-cmd-ctrl-8 = ['workspace O', 'exec-and-forget open -a "OrbStack"']
+alt-cmd-ctrl-9 = ['workspace D', 'exec-and-forget open -a "Microsoft Word"']
 
 # ───────────────────────────────────────────────────────────────────────────
-# WORKSPACES (Hyper + 7-0 → ir a workspace)
+# SCRATCH WORKSPACE (Hyper + 0)
 # ───────────────────────────────────────────────────────────────────────────
-alt-cmd-ctrl-7 = 'workspace N'
-alt-cmd-ctrl-8 = 'workspace S'
-alt-cmd-ctrl-9 = 'workspace D'
-alt-cmd-ctrl-0 = 'workspace X'
+alt-cmd-ctrl-0 = 'workspace S'
 
 # ───────────────────────────────────────────────────────────────────────────
 # MOVE TO WORKSPACE (Hyper + Shift + número)
@@ -79,13 +80,13 @@ alt-cmd-ctrl-0 = 'workspace X'
 alt-cmd-ctrl-shift-1 = 'move-node-to-workspace B'
 alt-cmd-ctrl-shift-2 = 'move-node-to-workspace T'
 alt-cmd-ctrl-shift-3 = 'move-node-to-workspace C'
-alt-cmd-ctrl-shift-4 = 'move-node-to-workspace F'
-alt-cmd-ctrl-shift-5 = 'move-node-to-workspace M'
-alt-cmd-ctrl-shift-6 = 'move-node-to-workspace W'
-alt-cmd-ctrl-shift-7 = 'move-node-to-workspace N'
-alt-cmd-ctrl-shift-8 = 'move-node-to-workspace S'
+alt-cmd-ctrl-shift-4 = 'move-node-to-workspace X'
+alt-cmd-ctrl-shift-5 = 'move-node-to-workspace K'
+alt-cmd-ctrl-shift-6 = 'move-node-to-workspace M'
+alt-cmd-ctrl-shift-7 = 'move-node-to-workspace W'
+alt-cmd-ctrl-shift-8 = 'move-node-to-workspace O'
 alt-cmd-ctrl-shift-9 = 'move-node-to-workspace D'
-alt-cmd-ctrl-shift-0 = 'move-node-to-workspace X'
+alt-cmd-ctrl-shift-0 = 'move-node-to-workspace S'
 
 # ───────────────────────────────────────────────────────────────────────────
 # WINDOW FOCUS (Hyper + hjkl)
@@ -208,6 +209,11 @@ run = 'move-node-to-workspace T'
 if.app-id = 'dev.warp.Warp-Stable'
 run = 'move-node-to-workspace T'
 
+# Claude Desktop → K
+[[on-window-detected]]
+if.app-id = 'com.anthropic.claudefordesktop'
+run = 'move-node-to-workspace K'
+
 # Code → C
 [[on-window-detected]]
 if.app-id = 'com.todesktop.230313mzl4w4u92'
@@ -221,10 +227,10 @@ run = 'move-node-to-workspace C'
 if.app-id = 'com.apple.dt.Xcode'
 run = 'move-node-to-workspace C'
 
-# Finder → F
+# Codex → X
 [[on-window-detected]]
-if.app-id = 'com.apple.finder'
-run = 'move-node-to-workspace F'
+if.app-id = 'com.openai.codex'
+run = 'move-node-to-workspace X'
 
 # Messages → M
 [[on-window-detected]]
@@ -243,6 +249,10 @@ run = 'move-node-to-workspace M'
 if.app-id = 'com.hnc.Discord'
 run = 'move-node-to-workspace M'
 
+[[on-window-detected]]
+if.app-id = 'com.apple.MobileSMS'
+run = 'move-node-to-workspace M'
+
 # WhatsApp → W
 [[on-window-detected]]
 if.app-id = 'net.whatsapp.WhatsApp'
@@ -252,35 +262,30 @@ run = 'move-node-to-workspace W'
 if.app-id = 'ru.keepcoder.Telegram'
 run = 'move-node-to-workspace W'
 
-# Notes → N
+# OrbStack → O
 [[on-window-detected]]
-if.app-id = 'notion.id'
-run = 'move-node-to-workspace N'
+if.app-id = 'dev.kdrag0n.MacVirt'
+run = 'move-node-to-workspace O'
 
+# Docs → D
 [[on-window-detected]]
-if.app-id = 'md.obsidian'
-run = 'move-node-to-workspace N'
-
-[[on-window-detected]]
-if.app-id = 'com.apple.Notes'
-run = 'move-node-to-workspace N'
-
-# Spotify → S
-[[on-window-detected]]
-if.app-id = 'com.spotify.client'
-run = 'move-node-to-workspace S'
-
-[[on-window-detected]]
-if.app-id = 'com.apple.Music'
-run = 'move-node-to-workspace S'
-
-# Design → D
-[[on-window-detected]]
-if.app-id = 'com.figma.Desktop'
+if.app-id = 'com.microsoft.Word'
 run = 'move-node-to-workspace D'
 
 [[on-window-detected]]
-if.app-id = 'com.bohemiancoding.sketch3'
+if.app-id = 'com.microsoft.Excel'
+run = 'move-node-to-workspace D'
+
+[[on-window-detected]]
+if.app-id = 'com.microsoft.Powerpoint'
+run = 'move-node-to-workspace D'
+
+[[on-window-detected]]
+if.app-id = 'com.goodnotesapp.x'
+run = 'move-node-to-workspace D'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.iWork.Numbers'
 run = 'move-node-to-workspace D'
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -304,4 +309,40 @@ run = 'layout floating'
 
 [[on-window-detected]]
 if.app-id = 'com.raycast.macos'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.Preview'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.ActivityMonitor'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.spotify.client'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.Music'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.finder'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.Notes'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.mail'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.iCal'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.archiveutility'
 run = 'layout floating'

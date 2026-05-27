@@ -133,3 +133,8 @@ export PATH="$HOME/.dantse/bin:$PATH"
 # OpenClaw Completion (deshabilitado - comando no encontrado)
 # source <(openclaw completion --shell zsh)
 export PATH="$HOME/.local/bin:$PATH"
+
+alias claude="claude --dangerously-skip-permissions"
+
+# ui.sh / uidotsh MCP (Cursor reads ${env:UIDOTSH_TOKEN} in ~/.cursor/mcp.json)
+export UIDOTSH_TOKEN="${UIDOTSH_TOKEN:-}"

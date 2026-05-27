@@ -546,7 +546,7 @@ function __icon_map() {
   "Open Video Downloader")
     icon_result=":open_video_downloader:"
     ;;
-  "ChatGPT")
+  "ChatGPT" | "Codex")
     icon_result=":openai:"
     ;;
   "OpenAI Translator")

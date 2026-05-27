@@ -51,9 +51,9 @@ sketchybar --default "${defaults[@]}"
 sketchybar --add event aerospace_workspace_change
 
 # Add workspaces
-for ws in B T C F M W N S D X; do
+for ws in B T C X M W O D S; do
   sketchybar --add item "space.$ws" left \
-    --subscribe "space.$ws" aerospace_workspace_change \
+    --subscribe "space.$ws" aerospace_workspace_change front_app_switched \
     --set "space.$ws" \
       drawing=off \
       background.color="$ITEM_BG" \
@@ -75,7 +75,7 @@ for ws in B T C F M W N S D X; do
 done
 
 # Load icons on startup
-for ws in B T C F M W N S D X; do
+for ws in B T C X M W O D S; do
   apps=$(aerospace list-windows --workspace "$ws" 2>/dev/null | awk -F'|' '{gsub(/^ *| *$/, "", $2); print $2}' | sort -u)
   
   if [ -n "$apps" ]; then

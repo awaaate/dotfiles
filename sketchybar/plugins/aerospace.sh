@@ -3,6 +3,14 @@
 source "$CONFIG_DIR/plugins/icon_map.sh"
 source "$CONFIG_DIR/colors.sh"
 
+# On front_app_switched, refresh ALL workspaces (app may have moved/opened/closed)
+if [ "$SENDER" = "front_app_switched" ]; then
+  for ws in B T C X M W O D S; do
+    sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE="$FOCUSED_WORKSPACE" AEROSPACE_PREV_WORKSPACE="" --set "space.$ws" script="$CONFIG_DIR/plugins/aerospace.sh $ws"
+  done
+  exit 0
+fi
+
 WORKSPACE_ID="$1"
 
 # Get apps in this workspace
@@ -20,9 +28,11 @@ if [ -n "$apps" ]; then
   done <<< "$apps"
 fi
 
+# Get focused workspace
+FOCUSED=$(aerospace list-workspaces --focused 2>/dev/null)
+
 # Check if focused
-if [ "$1" = "$FOCUSED_WORKSPACE" ]; then
-  # ACTIVE: bright background, white text, accent border
+if [ "$WORKSPACE_ID" = "$FOCUSED" ]; then
   sketchybar --set "$NAME" \
     drawing=on \
     background.color="$ITEM_BG_ACTIVE" \
@@ -30,14 +40,13 @@ if [ "$1" = "$FOCUSED_WORKSPACE" ]; then
     background.border_color="$ACCENT" \
     icon.color="$WHITE" \
     icon.font="SF Pro:Black:13.0"
-  
+
   if [ -n "$icon_strip" ]; then
     sketchybar --set "$NAME" label="$icon_strip" label.color="$WHITE"
   else
     sketchybar --set "$NAME" label=""
   fi
 else
-  # INACTIVE with windows: dimmed
   if [ -n "$icon_strip" ]; then
     sketchybar --set "$NAME" \
       drawing=on \
@@ -48,7 +57,6 @@ else
       label="$icon_strip" \
       label.color="$GREY"
   else
-    # Empty: hide it
     sketchybar --set "$NAME" drawing=off
   fi
 fi
