@@ -1,35 +1,81 @@
 # dotfiles
 
-Configuraciones personales de macOS con una identidad visual oscura y acento coral `#FF7A6B`.
+Configuración de macOS con una identidad visual oscura y acento **iris** `#be84fb`.
 
-> Estas configuraciones se instalan mediante **copias**, no mediante symlinks. Algunas aplicaciones no cargan correctamente su configuración cuando la ruta completa o alguno de sus directorios es un enlace simbólico.
+El sistema de diseño completo, con la justificación de cada decisión, está en
+[`docs/DESIGN.md`](docs/DESIGN.md). El estado previo al rediseño y los problemas encontrados
+están en [`docs/AUDIT.md`](docs/AUDIT.md).
+
+> La instalación es por **copia**, no por symlinks. Varias de estas aplicaciones no cargan bien
+> su configuración cuando la ruta o alguno de sus directorios es un enlace simbólico.
+
+## Regla central
+
+> **El acento significa IDENTIDAD y FOCO. Nunca ESTADO.**
+
+El acento responde a *dónde estoy / qué está activo*. Verde, ámbar, rojo y teal responden a
+*qué ha pasado*. Por eso el badge de notificaciones de cmux es ámbar y no del color de acento:
+"seleccionado" y "requiere atención" no pueden compartir tratamiento visual.
 
 ## Contenido
 
-- **.aerospace.toml** - Tiling window manager
-- **borders/** - Bordes de ventanas con acento coral
-- **cmux/** - Interfaz, paneles, sidebar y workspaces de cmux
-- **ghostty/** - Terminal, fuente, tema, cursor y selección
-- **karabiner/** - Keyboard remapping
-- **nvim/** - Neovim
-- **pi/** - Tema coral y extensiones globales de pi
-- **sketchybar/** - Barra de estado
-- **wallpapers/** - Fondos de pantalla
-- **zsh/** - Shell
+| Ruta | Qué es |
+|---|---|
+| `tools/` | Tokens de diseño, matemática de color, validador y generador |
+| `docs/` | Auditoría UX y sistema de diseño |
+| `.aerospace.toml` | Tiling window manager |
+| `borders/` | Anillo de foco de ventana (nivel 1 de 3) |
+| `cmux/` | Interfaz, paneles, sidebar y workspaces |
+| `ghostty/` | Terminal + `themes/iris` (generado) |
+| `karabiner/` | Remapeo de teclado (sin cambios en este rediseño) |
+| `nvim/` | Neovim (**sin cambios** — ver limitaciones) |
+| `pi/` | Tema iris y extensiones globales |
+| `sketchybar/` | Barra de estado |
+| `wallpapers/` | Fondos generados, dark y light |
+| `zsh/` | Shell + prompt Powerlevel10k |
+
+## Los colores son generados, no escritos a mano
+
+`tools/tokens.mjs` es la **única fuente de verdad** del color. `tools/build.mjs` genera desde ahí:
+
+```
+pi/themes/iris.json      ghostty/themes/iris      cmux/cmux.json
+sketchybar/colors.sh     borders/bordersrc
+```
+
+Esos archivos llevan cabecera `GENERATED`. **No los edites a mano**: se sobreescriben. Para
+cambiar un color se edita `tools/tokens.mjs` y se regenera.
+
+Existe porque el problema original del repo era justo ese: un acento coherente sobre neutros
+tomados de cuatro paletas distintas (Kanagawa, TokyoNight, Catppuccin Mocha y Macchiato). Generar
+en lugar de editar hace esa deriva imposible por construcción.
+
+```bash
+node tools/build.mjs          # regenerar configs
+node tools/wallpaper.mjs      # regenerar fondos
+```
 
 ## Instalación
 
 ```bash
-# Clonar el repositorio
 git clone https://github.com/awaaate/dotfiles.git ~/dotfiles
+```
 
-# Crear los directorios de destino
-mkdir -p \
-  ~/.config/{borders,cmux,ghostty,karabiner,nvim,sketchybar} \
-  ~/.pi/agent/{extensions,themes} \
-  ~/Pictures
+Copia de seguridad **antes** de sobreescribir nada:
 
-# Copiar configuraciones de macOS y terminal
+```bash
+BK=~/dotfiles-backup-$(date +%Y%m%d-%H%M%S); mkdir -p "$BK"; for p in ~/.config/borders ~/.config/cmux ~/.config/ghostty ~/.config/karabiner ~/.config/nvim ~/.config/sketchybar ~/.pi/agent ~/.zshrc ~/.p10k.zsh ~/.aerospace.toml; do [ -e "$p" ] && cp -R "$p" "$BK/"; done; echo "backup en $BK"
+```
+
+Directorios de destino:
+
+```bash
+mkdir -p ~/.config/{borders,cmux,ghostty/themes,karabiner,nvim,sketchybar} ~/.pi/agent/{extensions,themes} ~/Pictures
+```
+
+Configuración de macOS y terminal:
+
+```bash
 cp ~/dotfiles/.aerospace.toml ~/.aerospace.toml
 rsync -a ~/dotfiles/borders/ ~/.config/borders/
 rsync -a ~/dotfiles/cmux/ ~/.config/cmux/
@@ -38,73 +84,112 @@ rsync -a ~/dotfiles/karabiner/ ~/.config/karabiner/
 rsync -a ~/dotfiles/nvim/ ~/.config/nvim/
 rsync -a ~/dotfiles/sketchybar/ ~/.config/sketchybar/
 cp ~/dotfiles/zsh/.zshrc ~/.zshrc
+cp ~/dotfiles/zsh/.p10k.zsh ~/.p10k.zsh
+```
 
-# Copiar pi sin tocar credenciales, modelos ni sesiones
+pi se copia por archivos concretos, para **no tocar credenciales, modelos ni sesiones**:
+
+```bash
 cp ~/dotfiles/pi/settings.json ~/.pi/agent/settings.json
 rsync -a ~/dotfiles/pi/extensions/ ~/.pi/agent/extensions/
 rsync -a ~/dotfiles/pi/themes/ ~/.pi/agent/themes/
-
-# Copiar wallpapers
-rsync -a ~/dotfiles/wallpapers/ ~/Pictures/
 ```
 
-## cmux
-
-La configuración usa:
-
-- Borde del panel activo coral `#FF7A6B`.
-- Divisores oscuros `#3B4261`.
-- Workspaces con estilo `washRail`.
-- Badge de notificaciones coral.
-- Sidebar integrada con el fondo Kanagawa de Ghostty.
-- Integraciones de Claude Code y Gemini.
-- Fuente JetBrainsMono Nerd Font en Markdown.
-
-Antes de reemplazar una configuración existente:
+Fondo de pantalla — elige la resolución de tu monitor (`3024x1964` es la XDR interna; también hay
+`5120x2880`, `3840x2160`, `2560x1440` y una variante `iris-light-3024x1964.png`):
 
 ```bash
-cp ~/.config/cmux/cmux.json ~/.config/cmux/cmux.json.$(date +%Y%m%d-%H%M%S).bak
-cp ~/dotfiles/cmux/cmux.json ~/.config/cmux/cmux.json
-cmux config doctor
-cmux reload-config
+cp ~/dotfiles/wallpapers/iris-dark-3024x1964.png ~/Pictures/
+osascript -e 'tell application "System Events" to set picture of every desktop to "'"$HOME"'/Pictures/iris-dark-3024x1964.png"'
 ```
 
-cmux también lee `~/.config/ghostty/config`, por lo que el tema Kanagawa, la fuente, el cursor y la selección coral se comparten con Ghostty.
-
-## pi
-
-La carpeta `pi/` versiona únicamente configuración portable:
-
-- `settings.json`
-- `themes/coral-glow.json`
-- extensiones globales
-
-No se versionan `auth.json`, sesiones, catálogos de modelos, índices de importación ni ninguna credencial.
-
-Después de copiar la configuración, ejecuta dentro de pi:
-
-```text
-/reload
-```
-
-## Actualizar el repositorio desde la máquina local
-
-Las aplicaciones modifican archivos reales en `~/.config` y `~/.pi`; por eso los cambios deben copiarse explícitamente al repositorio:
+## Aplicar cambios en caliente
 
 ```bash
-cp ~/.config/cmux/cmux.json ~/dotfiles/cmux/cmux.json
-cp ~/.config/ghostty/config ~/dotfiles/ghostty/config
-cp ~/.config/borders/bordersrc ~/dotfiles/borders/bordersrc
-cp ~/.config/sketchybar/colors.sh ~/dotfiles/sketchybar/colors.sh
-
-jq 'del(.lastChangelogVersion)' ~/.pi/agent/settings.json > ~/dotfiles/pi/settings.json.tmp
-mv ~/dotfiles/pi/settings.json.tmp ~/dotfiles/pi/settings.json
-rsync -a ~/.pi/agent/extensions/ ~/dotfiles/pi/extensions/
-rsync -a ~/.pi/agent/themes/ ~/dotfiles/pi/themes/
+sketchybar --reload
+pkill -x borders; (~/.config/borders/bordersrc &)
+aerospace reload-config
+exec zsh
 ```
 
-El filtro de `jq` evita versionar campos de estado efímeros como `lastChangelogVersion`.
+Ghostty: `super+shift+r` recarga; `super+shift+.` abre la config.
+pi: `/reload` dentro de la sesión.
 
-## Secretos
+**cmux no se puede recargar desde fuera.** Con `socketControlMode: cmuxOnly`, `cmux reload-config`
+responde `Access denied - only processes started inside cmux can connect`. Hay que ejecutarlo
+desde una shell **dentro** de cmux, o reiniciar la aplicación.
 
-Los tokens, sesiones, claves personales y archivos de autenticación no se versionan. Deben permanecer en las rutas locales de cada aplicación o cargarse mediante variables de entorno.
+## Copiar cambios en vivo de vuelta al repo
+
+Las aplicaciones escriben en `~/.config` y `~/.pi`, así que los cambios hay que copiarlos
+explícitamente. Ojo: los archivos generados se sobreescriben al correr `node tools/build.mjs`.
+
+```bash
+cd ~/dotfiles
+cp ~/.aerospace.toml .aerospace.toml
+rsync -a ~/.config/sketchybar/ sketchybar/
+rsync -a ~/.config/ghostty/ ghostty/
+rsync -a ~/.config/cmux/ cmux/
+cp ~/.zshrc zsh/.zshrc && cp ~/.p10k.zsh zsh/.p10k.zsh
+rsync -a ~/.pi/agent/extensions/ pi/extensions/
+rsync -a ~/.pi/agent/themes/ pi/themes/
+
+# lastChangelogVersion es estado efímero de pi; no se versiona
+jq 'del(.lastChangelogVersion)' ~/.pi/agent/settings.json > pi/settings.json
+```
+
+## Validación
+
+```bash
+node tools/check-contrast.mjs                                    # contraste y separación semántica
+node tools/build.mjs --check                                     # ¿generados == tokens?
+/Applications/Ghostty.app/Contents/MacOS/ghostty +validate-config
+/Applications/cmux.app/Contents/MacOS/cmux config doctor
+bash -n ~/.config/sketchybar/sketchybarrc
+```
+
+`check-contrast.mjs` **sale con código distinto de cero** si algo falla; no es un informe. Exige
+texto de cuerpo a 7:1 (AAA), estados a 4.5:1, borde de foco a 3:1, y un mínimo de **0.10 ΔE** en
+OKLab entre el acento y cada color de estado — porque el ratio de contraste no ve el tono, y dos
+colores pueden pasar contraste y aun así ser indistinguibles.
+
+## Rollback
+
+```bash
+BK=~/dotfiles-backup-XXXXXXXX-XXXXXX     # el directorio creado antes de instalar
+rsync -a "$BK/sketchybar/" ~/.config/sketchybar/ && sketchybar --reload
+cp "$BK/.zshrc" ~/.zshrc && exec zsh
+```
+
+## Secretos y rutas de máquina
+
+- `zsh/.zshrc` y `zsh/.p10k.zsh` no contienen rutas absolutas de home ni credenciales; se verificó
+  antes de versionarlos. Usa `$HOME`, nunca `/Users/<usuario>`.
+- `pi/settings.json` guarda proveedor y modelo por defecto, **no** claves de API. No se versionan
+  `auth.json`, sesiones, catálogos de modelos ni índices de importación.
+- `sketchybar/plugins/icon_map.sh` es un archivo generado por sketchybar-app-font. Las apps que no
+  conoce se añaden en `plugins/workspaces.sh` (`__icon_override`), para no ensuciar el generado.
+
+## Dependencias
+
+`aerospace`, `sketchybar`, `borders`, `ghostty`, `cmux`, `pi`, `nvim`, `powerlevel10k`,
+`zsh-autosuggestions`, `zsh-syntax-highlighting`, `atuin`, `zoxide`, `fzf`, y las fuentes
+**JetBrainsMono Nerd Font** y **sketchybar-app-font**.
+
+Las fuentes no son opcionales. Sketchybar cae en fallback silencioso cuando una familia no existe,
+así que una fuente ausente no da error: dibuja cajas vacías. Todos los codepoints de
+`sketchybar/icons.sh` están verificados contra la tabla `cmap` de JetBrainsMono Nerd Font.
+
+## Limitaciones conocidas
+
+- **Neovim está sin tocar.** Sigue siendo un LazyVim de serie con `tokyonight-moon`, así que hoy es
+  la única superficie que no comparte la paleta.
+- **No hay capturas antes/después.** El proceso que hizo el rediseño no tenía permiso de grabación
+  de pantalla, así que la verificación se hizo consultando el estado aplicado
+  (`sketchybar --query`, `ghostty +show-config`, `cmux config doctor`) en vez de mirar píxeles.
+  Eso confirma lo que la aplicación resolvió, no cómo se ve.
+- **El SSID del WiFi no se muestra.** macOS lo redacta sin permiso de Localización, por todos los
+  métodos disponibles. La barra muestra el estado del enlace, que sí es fiable.
+- **`karabiner/` no se auditó a fondo** y no se cambió.
+- El fondo anterior no se pudo recuperar: ya había sido reemplazado antes de empezar. El que estaba
+  activo se conservó en el backup.
