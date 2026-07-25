@@ -1,33 +1,44 @@
 import type { ExtensionAPI, ThemeColor } from "@earendil-works/pi-coding-agent";
 import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
-import { basename } from "node:path";
+import { readFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { basename, join } from "node:path";
+
+/// Actions pi ships with NO default binding. They are the whole reason the
+/// header exists, so they are listed in the order they are most used.
+const SESSION_ACTIONS: ReadonlyArray<readonly [string, string]> = [
+	["app.session.new", "new"],
+	["app.session.tree", "tree"],
+	["app.session.fork", "fork"],
+	["app.session.resume", "resume"],
+];
+
+/// Resolve a binding by reading pi's own keybindings.json.
+///
+/// Deliberately tolerant: pi itself parses this file with a bare JSON.parse
+/// inside `catch { return undefined }`, so a malformed file means pi is ALSO
+/// running without these bindings — in which case advertising them would be a
+/// lie, and showing nothing is correct.
+let cachedBindings: Record<string, string | string[]> | null | undefined;
+function boundKey(id: string): string | undefined {
+	if (cachedBindings === undefined) {
+		try {
+			cachedBindings = JSON.parse(
+				readFileSync(join(homedir(), ".pi/agent/keybindings.json"), "utf8"),
+			) as Record<string, string | string[]>;
+		} catch {
+			cachedBindings = null;
+		}
+	}
+	const raw = cachedBindings?.[id];
+	const key = Array.isArray(raw) ? raw[0] : raw;
+	return typeof key === "string" && key.length > 0 ? key : undefined;
+}
 
 export default function (pi: ExtensionAPI) {
 	pi.on("session_start", (_event, ctx) => {
 		if (ctx.mode !== "tui") return;
 
-		// The theme exposes a dedicated heat ramp for reasoning effort, one key
-		// per level. The previous version painted the level with `warning`, which
-		// said "something is wrong" about a setting that is simply a setting.
-		//
-		// The key union is derived from ctx.thinkingLevel rather than imported:
-		// pi-coding-agent does not re-export ThinkingLevel (it only imports it
-		// from pi-agent-core, which is a nested dependency an extension has no
-		// business reaching into). Deriving it means this map cannot drift from
-		// the real API — adding a level upstream becomes a compile error here.
-		//
-		// Values are ThemeColor, not string, so a mistyped key is caught at
-		// compile time instead of silently falling back at runtime.
-		type Level = NonNullable<typeof ctx.thinkingLevel>;
-		const THINKING_COLOR: Record<Level, ThemeColor> = {
-			off: "thinkingOff",
-			minimal: "thinkingMinimal",
-			low: "thinkingLow",
-			medium: "thinkingMedium",
-			high: "thinkingHigh",
-			xhigh: "thinkingXhigh",
-			max: "thinkingMax",
-		};
 
 		const project = () => basename(ctx.cwd) || ctx.cwd;
 
@@ -58,6 +69,17 @@ export default function (pi: ExtensionAPI) {
 		// the cost readout. Since the theme now colours the built-in footer
 		// correctly, a custom one would only take information away.
 
+		// The header shows what the FOOTER DOES NOT.
+		//
+		// With quietStartup the built-in header renders an empty Text, so
+		// replacing it costs nothing — but it also means the startup keybinding
+		// hints are gone, and this config adds four bindings pi ships unbound
+		// (alt+n/t/k/r for new/tree/fork/resume). Undiscoverable shortcuts are
+		// no better than no shortcuts, so the header advertises them.
+		//
+		// Model, thinking level, session name, cwd, branch, tokens and cost all
+		// live in the built-in footer already. Repeating them here would just
+		// spend two rows saying the same thing twice.
 		ctx.ui.setHeader((_tui, theme) => ({
 			// render() reads the theme live rather than pre-baking colours, so
 			// there is nothing cached to throw away on invalidate.
@@ -65,21 +87,22 @@ export default function (pi: ExtensionAPI) {
 			render(width: number): string[] {
 				const title = `  ${theme.fg("accent", theme.bold("✦ pi"))} ${theme.fg("dim", "·")} ${theme.fg("text", theme.bold(project()))}`;
 
-				const level = ctx.thinkingLevel;
-				// Lowest priority last: on a narrow terminal these drop in reverse
-				// order, so the model survives longer than the session name.
-				// Hard-truncating instead would silently lose whichever segments
-				// happened to sit on the right.
-				const segments: string[] = [];
-				if (ctx.model?.id) segments.push(theme.fg("muted", ctx.model.id));
-				if (level) segments.push(theme.fg(THINKING_COLOR[level], level));
-				const name = pi.getSessionName();
-				if (name) segments.push(theme.fg("muted", name));
+				// Read the SAME file pi reads, so the hint cannot drift from the
+				// actual binding. The header factory only receives (tui, theme) —
+				// the KeybindingsManager is passed to custom() and the editor
+				// factory, but not here.
+				const hints: string[] = [];
+				for (const [id, label] of SESSION_ACTIONS) {
+					const key = boundKey(id);
+					if (key) {
+						hints.push(`${theme.fg("accent", key)} ${theme.fg("dim", label)}`);
+					}
+				}
 
 				const sep = theme.fg("dim", "  ·  ");
 				let detail = "";
-				for (let take = segments.length; take > 0; take--) {
-					const candidate = `  ${segments.slice(0, take).join(sep)}`;
+				for (let take = hints.length; take > 0; take--) {
+					const candidate = `  ${hints.slice(0, take).join(sep)}`;
 					if (visibleWidth(candidate) <= width) {
 						detail = candidate;
 						break;
