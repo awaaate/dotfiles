@@ -37,22 +37,32 @@ export default function (pi: ExtensionAPI) {
 		const theme = ctx.ui.theme;
 
 		// ── Live context gauge ──────────────────────────────────────────────
-		// Hidden below 50%: a widget costs a permanent row of terminal height,
-		// and an empty gauge earns nothing. It appears when it has something to
-		// warn about, which also makes its appearance meaningful.
+		// Always on, from session start. It reads the usage live inside render()
+		// rather than closing over a value, so the same widget stays correct as
+		// the session grows without being torn down and rebuilt.
 		const drawGauge = () => {
-			const usage = ctx.getContextUsage();
-			const pct = usage?.percent ?? null;
-			if (pct === null || pct < 50) {
-				ctx.ui.setWidget("iris.gauge", undefined);
-				return;
-			}
-
 			ctx.ui.setWidget(
 				"iris.gauge",
 				(_tui, t) => ({
 					invalidate() {},
 					render(width: number): string[] {
+						const usage = ctx.getContextUsage();
+						const pct = usage?.percent ?? null;
+
+						// Unknown is a real state, not zero: right after a compaction,
+						// and before the first response of a session, pi genuinely does
+						// not know the token count yet. Drawing an empty bar there would
+						// claim the context is empty, which is a different thing.
+						if (pct === null) {
+							const cells = Math.max(8, width - 20);
+							return [
+								"  " +
+									t.fg("borderMuted", "░".repeat(cells)) +
+									"  " +
+									t.fg("dim", "context ·  —"),
+							];
+						}
+
 						const { colour, note } = pressure(pct);
 						const label = `${pct.toFixed(0)}%`;
 						// Reserve the label, the note and the padding, then give the
@@ -74,7 +84,11 @@ export default function (pi: ExtensionAPI) {
 			);
 		};
 
+		// The widget re-renders on its own when pi redraws, but these force it
+		// at the moments the number actually moves.
+		pi.on("turn_start", drawGauge);
 		pi.on("turn_end", drawGauge);
+		pi.on("message_end", drawGauge);
 		pi.on("session_compact", drawGauge);
 		drawGauge();
 
@@ -112,8 +126,11 @@ export default function (pi: ExtensionAPI) {
 		});
 
 		// ── /gauge ──────────────────────────────────────────────────────────
+		// The always-on widget shows a bar and a percentage; this shows the raw
+		// numbers behind it, which is what you want when deciding whether to
+		// compact by hand.
 		pi.registerCommand("gauge", {
-			description: "Show the context gauge now, even below its threshold",
+			description: "Show exact context token counts, not just the bar",
 			async handler(_args: string, cmdCtx: ExtensionContext) {
 				const usage = cmdCtx.getContextUsage();
 				if (!usage || usage.percent === null) {
