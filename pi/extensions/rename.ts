@@ -1,6 +1,13 @@
 import { complete } from "@earendil-works/pi-ai/compat";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
+// A small, cheap model is picked deliberately for title generation rather than
+// reusing the session model, which may be an expensive reasoning model.
+//
+// This does NOT affect the main session: the model object is resolved through
+// modelRegistry and handed straight to complete() with its own auth. Nothing
+// here touches session state, so a nested call can never change the model the
+// user is actually working with.
 const PROVIDER = "openai-codex";
 const MODEL_ID = "gpt-5.6-luna";
 const MAX_MESSAGES = 20;
@@ -178,9 +185,12 @@ export default function (pi: ExtensionAPI) {
 				return;
 			}
 
-			const model = ctx.modelRegistry.find(PROVIDER, MODEL_ID);
+			// Fall back to whatever the session is already using rather than
+			// failing outright: the preferred model is hardcoded, so a catalog
+			// change upstream would otherwise break /rename with no recourse.
+			const model = ctx.modelRegistry.find(PROVIDER, MODEL_ID) ?? ctx.model;
 			if (!model) {
-				ctx.ui.notify(`Model ${PROVIDER}/${MODEL_ID} was not found`, "error");
+				ctx.ui.notify(`Model ${PROVIDER}/${MODEL_ID} was not found, and no session model is active`, "error");
 				return;
 			}
 

@@ -1,6 +1,7 @@
 {
-  "theme": "coral-glow",
+  "lastChangelogVersion": "0.82.1",
+  "theme": "iris",
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-5.6-sol",
-  "defaultThinkingLevel": "medium"
+  "defaultThinkingLevel": "xhigh"
 }
