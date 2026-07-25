@@ -1,0 +1,92 @@
+{
+  "$schema": "https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/data/cmux.schema.json",
+  "schemaVersion": 1,
+
+  "paneBorderColor": "#3B4261",
+  "activePaneBorderColor": "#FF7A6B",
+
+  "app": {
+    "appearance": "dark",
+    "appIcon": "dark",
+    "minimalMode": false,
+    "newWorkspacePlacement": "afterCurrent",
+    "reorderOnNotification": true,
+    "workspaceInheritWorkingDirectory": true,
+    "confirmQuit": "dirty-only"
+  },
+
+  "terminal": {
+    "sessionContentAlignment": "center",
+    "sessionContentMaxWidth": false,
+    "showScrollBar": true,
+    "scrollSpeed": 1,
+    "autoResumeAgentSessions": true
+  },
+
+  "notifications": {
+    "unreadPaneRing": true,
+    "paneFlash": true,
+    "dockBadge": true,
+    "showInMenuBar": true,
+    "sound": "default"
+  },
+
+  "sidebar": {
+    "showBranchDirectory": true,
+    "showWorkspaceDescription": true,
+    "showNotificationMessage": true,
+    "showAgentActivity": true,
+    "showProgress": true,
+    "showPullRequests": true,
+    "showPorts": true,
+    "openPortLinksInCmuxBrowser": true,
+    "watchGitStatus": true,
+    "wrapWorkspaceTitles": false,
+    "branchLayout": "vertical",
+    "notificationMessageLineLimit": 8
+  },
+
+  "workspaceColors": {
+    "indicatorStyle": "washRail",
+    "selectionColor": "#3A292E",
+    "notificationBadgeColor": "#FF7A6B",
+    "colors": {
+      "Coral": "#FF7A6B",
+      "Orange": "#F5A97F",
+      "Amber": "#EED49F",
+      "Green": "#A6DA95",
+      "Teal": "#8BD5CA",
+      "Blue": "#8AADF4",
+      "Purple": "#C6A0F6",
+      "Red": "#ED8796",
+      "Charcoal": "#45475A"
+    }
+  },
+
+  "sidebarAppearance": {
+    "matchTerminalBackground": true,
+    "tintColor": "#1E1E2E",
+    "darkModeTintColor": "#1E1E2E",
+    "lightModeTintColor": null,
+    "tintOpacity": 0.18
+  },
+
+  "automation": {
+    "claudeCodeIntegration": true,
+    "geminiIntegration": true,
+    "suppressSubagentNotifications": true,
+    "socketControlMode": "cmuxOnly"
+  },
+
+  "browser": {
+    "theme": "dark",
+    "openTerminalLinksInCmuxBrowser": true,
+    "interceptTerminalOpenCommandInCmuxBrowser": true
+  },
+
+  "markdown": {
+    "fontSize": 15,
+    "fontFamily": "JetBrainsMono Nerd Font",
+    "maxWidth": 980
+  }
+}

@@ -9,7 +9,7 @@ options=(
   style=round
   width=8.0
   hidpi=on
-  active_color=0xff7aa2f7    # TokyoNight blue
+  active_color=0xffff7a6b    # Coral rosa-naranja
   inactive_color=0x333b4261  # TokyoNight muted
 )
 

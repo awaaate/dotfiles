@@ -15,6 +15,7 @@ export ORANGE=0xfff5a97f
 export MAGENTA=0xffc6a0f6
 export GREY=0xff939ab7
 export CYAN=0xff8bd5ca
+export CORAL=0xffff7a6b
 export TRANSPARENT=0x00000000
 
 # Backgrounds - DARKER
@@ -24,8 +25,8 @@ export BG2=0xcc313244
 
 # Bar colors
 export BAR_COLOR=0x661e1e2e
-export ACCENT=$BLUE
-export ACCENT_TRANSPARENT=0x448aadf4
+export ACCENT=$CORAL
+export ACCENT_TRANSPARENT=0x44ff7a6b
 export GREY_TRANSP=0x44939ab7
 
 # Item backgrounds - DARKER

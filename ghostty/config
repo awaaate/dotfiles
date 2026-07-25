@@ -37,6 +37,12 @@ cursor-style = block
 cursor-style-blink = false
 shell-integration-features = cursor,sudo,title
 
+# Acento coral rosa-naranja (#FF7A6B)
+cursor-color = ff7a6b
+cursor-text = 1f1f28
+selection-background = ff7a6b
+selection-foreground = 1f1f28
+
 # ───────────────────────────────────────────────────────────────────────────
 # SCROLLBACK
 # ───────────────────────────────────────────────────────────────────────────
@@ -54,7 +60,7 @@ copy-on-select = clipboard
 # MOUSE
 # ───────────────────────────────────────────────────────────────────────────
 mouse-hide-while-typing = true
-focus-follows-mouse = true
+focus-follows-mouse = false
 
 # ───────────────────────────────────────────────────────────────────────────
 # THEME (matches p10k Pure style)
