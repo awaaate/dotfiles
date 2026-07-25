@@ -133,12 +133,34 @@ print(json.dumps(out))
 ' 2>/dev/null) || workspaces_json="[]"
 fi
 
-if [ "$workspaces_json" = "[]" ] || [ -z "$workspaces_json" ]; then
-	workspaces_json='[{"name":"cmux","status":"attention"}]'
+# If the socket told us nothing, we still know the one thing that matters: a
+# notification just fired, so an agent wants the user. Count them instead of
+# inventing workspace detail we do not have.
+#
+# This is what makes the tile useful WITHOUT socket access. `notifiedAt` lets
+# the app clear the badge when cmux is next focused, so the count means
+# "notifications since you last looked at cmux" rather than growing forever.
+count=1
+if [ -f "$STATE" ]; then
+	prev=$(python3 -c '
+import json, sys
+try:
+    print(int(json.load(open(sys.argv[1])).get("count", 0)))
+except Exception:
+    print(0)
+' "$STATE" 2>/dev/null || echo 0)
+	count=$((prev + 1))
 fi
 
+# Deliberately NOT inventing a placeholder workspace here. A synthetic entry
+# would count as one flagged workspace and shadow the real notification count —
+# three notifications would render as "1". An empty list plus a count is the
+# honest encoding of "something happened, we do not know where".
+[ -z "$workspaces_json" ] && workspaces_json="[]"
+
 tmp="$DIR/.dock-state.$$.tmp"
-printf '{"workspaces":%s}\n' "$workspaces_json" >"$tmp"
+printf '{"workspaces":%s,"count":%d,"notifiedAt":%d}\n' \
+	"$workspaces_json" "$count" "$(date +%s)" >"$tmp"
 mv -f "$tmp" "$STATE"
 
 exit 0

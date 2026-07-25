@@ -16,8 +16,22 @@ struct AgentState: Codable {
 
 	var workspaces: [Workspace] = []
 
+	/// Notifications seen since the user last focused cmux. The hook keeps this
+	/// because it works with zero socket access — even when cmux tells us
+	/// nothing about which workspace fired, it is still true that something
+	/// wanted attention.
+	var count: Int = 0
+
+	/// Unix seconds of the last notification, so the app can tell whether
+	/// focusing cmux happened after it.
+	var notifiedAt: TimeInterval = 0
+
 	var needsAttention: Int {
-		workspaces.filter { $0.status == .attention || $0.status == .error }.count
+		// Prefer real per-workspace detail. Fall back to the raw notification
+		// count when the hook could not reach the socket and only knows that
+		// something happened.
+		let flagged = workspaces.filter { $0.status == .attention || $0.status == .error }.count
+		return flagged > 0 ? flagged : count
 	}
 
 	var working: Int { workspaces.filter { $0.status == .working }.count }
@@ -27,7 +41,9 @@ struct AgentState: Codable {
 		if workspaces.contains(where: { $0.status == .error }) { return .error }
 		if workspaces.contains(where: { $0.status == .attention }) { return .attention }
 		if workspaces.contains(where: { $0.status == .working }) { return .working }
-		return .idle
+		// No per-workspace detail, but notifications did fire — that is still
+		// something wanting the user, and the tile must not hide on it.
+		return count > 0 ? .attention : .idle
 	}
 }
 
@@ -199,10 +215,35 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 			.appendingPathComponent(".cmux/dock-state.json")
 		watcher = StateWatcher(url: url) { [weak self] s in
 			guard let self else { return }
-			self.state = s
-			self.tile.state = s
-			self.applyVisibility(for: s)
+			self.apply(s)
 		}
+
+		// Focusing cmux IS reading the notification. Without this the count only
+		// ever grows, and a badge that never clears stops meaning anything.
+		NSWorkspace.shared.notificationCenter.addObserver(
+			self, selector: #selector(appActivated(_:)),
+			name: NSWorkspace.didActivateApplicationNotification, object: nil)
+	}
+
+	@objc private func appActivated(_ note: Notification) {
+		let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication
+		guard app?.bundleIdentifier == "com.cmuxterm.app" else { return }
+		clearedAt = Date().timeIntervalSince1970
+		NSLog("CmuxDock: cmux focused — clearing")
+		apply(state)
+	}
+
+	/// Everything older than this has been seen.
+	private var clearedAt: TimeInterval = 0
+
+	private func apply(_ s: AgentState) {
+		state = s
+		// A notification that predates the last time cmux was focused has
+		// already been read, so it should not keep the tile alive.
+		let seen = s.notifiedAt > 0 && s.notifiedAt <= clearedAt
+		let effective = seen ? AgentState() : s
+		tile.state = effective
+		applyVisibility(for: effective)
 	}
 
 	/// The tile exists only while something is worth reporting.
@@ -294,6 +335,67 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 		p.arguments = args
 		do { try p.run() } catch { NSLog("CmuxDock: \(path) failed: \(error)") }
 	}
+}
+
+// MARK: - Offscreen render
+
+/// `CmuxDock --render <dir>` draws every tile state to PNGs and exits.
+///
+/// The tile is the app's entire output and it lives in the Dock, where it
+/// cannot be screenshotted without screen-recording permission. Rendering the
+/// same NSView offscreen is the only way to actually look at what ships.
+func renderStates(to dir: String) -> Int32 {
+	let cases: [(String, AgentState)] = [
+		("idle", AgentState(workspaces: [.init(name: "T", status: .idle)])),
+		("working", AgentState(workspaces: [.init(name: "T", status: .working)])),
+		(
+			"attention-1",
+			AgentState(workspaces: [
+				.init(name: "T", status: .working), .init(name: "C", status: .attention),
+			])
+		),
+		(
+			"attention-3",
+			AgentState(workspaces: [
+				.init(name: "T", status: .attention), .init(name: "C", status: .attention),
+				.init(name: "K", status: .attention),
+			])
+		),
+		(
+			"error",
+			AgentState(workspaces: [
+				.init(name: "T", status: .error), .init(name: "C", status: .attention),
+			])
+		),
+		(
+			"attention-12",
+			AgentState(
+				workspaces: (1...12).map { .init(name: "W\($0)", status: .attention) })
+		),
+	]
+
+	try? FileManager.default.createDirectory(
+		atPath: dir, withIntermediateDirectories: true)
+
+	for (name, state) in cases {
+		let size = NSSize(width: 128, height: 128)
+		let view = TileView(frame: NSRect(origin: .zero, size: size))
+		view.state = state
+		guard let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { continue }
+		view.cacheDisplay(in: view.bounds, to: rep)
+		guard let png = rep.representation(using: .png, properties: [:]) else { continue }
+		let path = "\(dir)/tile-\(name).png"
+		try? png.write(to: URL(fileURLWithPath: path))
+		print("wrote \(path)")
+	}
+	return 0
+}
+
+if let i = CommandLine.arguments.firstIndex(of: "--render") {
+	let dir = CommandLine.arguments.count > i + 1 ? CommandLine.arguments[i + 1] : "."
+	// NSView drawing needs an NSApplication to exist, but not a run loop.
+	_ = NSApplication.shared
+	exit(renderStates(to: dir))
 }
 
 let app = NSApplication.shared

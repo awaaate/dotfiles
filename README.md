@@ -128,6 +128,12 @@ cp tools/cmux-dock-hook.sh ~/.config/cmux/dock-hook.sh && chmod +x ~/.config/cmu
 Solo necesita las Command Line Tools (`swiftc`), no Xcode ni SwiftPM: un bundle de AppKit es un directorio
 con un `Info.plist` y un binario.
 
+**Funciona sin acceso al socket.** Si el hook no puede consultar a cmux, sigue sabiendo lo único
+imprescindible: que una notificación acaba de dispararse. Cuenta notificaciones y el tile muestra ese
+número. Al enfocar cmux el contador se limpia y el icono se va — así el número significa "desde la última
+vez que miraste", no un total que crece para siempre. Si el socket sí responde, sustituye el contador por
+el detalle real por workspace.
+
 **Por qué está partido en dos procesos.** cmux rechaza conexiones al socket desde fuera de sí mismo con
 `socketControlMode: cmuxOnly` — verificado en cmux 0.64.20, donde `ping`, `capabilities`, `list-windows`,
 `identify` y `workspace list` responden *"Access denied"*. Solo `cmux version` funciona sin socket. Así que
@@ -140,9 +146,6 @@ por stdin y deben devolver política actualizada por stdout dentro de `timeoutSe
 
 La app observa el **directorio**, no el archivo: el hook escribe con temp + `rename`, y un `rename` cambia
 el inode, así que un watcher sobre el archivo se quedaría sordo tras la primera escritura.
-
-`LSUIElement` está en `false` y la activation policy es `.regular` — **obligatorio**: una app `.accessory`
-no tiene tile en el Dock, así que no puede ser invisible y tener tile a la vez.
 
 Depuración:
 

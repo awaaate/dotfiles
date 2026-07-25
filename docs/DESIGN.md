@@ -221,6 +221,9 @@ entering and leaving the Dock on every flap is worse than one that lingers.
 Its ring is the accent only at rest, which is the one moment it is never seen. In practice the ring always
 carries a state colour, because the tile is only visible when there is a state.
 
+The count clears when cmux is focused, because focusing cmux *is* reading the notification. A badge that
+only ever grows stops meaning anything.
+
 ---
 
 ## 10. Narrow and wide layouts
