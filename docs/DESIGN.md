@@ -209,10 +209,17 @@ Deliberate choices:
 - Spinner sits **leading**, notification badge **trailing**. A spinner is transient ("busy") and a badge
   is persistent ("unread"); putting them in the same slot lets them trade places.
 
-**Intentional deviation:** `swift/CmuxDock` adds a fourth, always-visible signal below level 1 — a Dock
-tile showing aggregate agent state, worst-wins. It is passive like the unread ring, but survives cmux not
-being frontmost. Its resting ring is the accent (identity: "this is cmux"); the moment any workspace has
-real state, the state colour takes over.
+**Intentional deviation:** `swift/CmuxDock` adds a Dock tile showing aggregate agent state, worst-wins. It
+sits between levels 1 and 2 — passive like the unread ring, but it survives cmux not being frontmost.
+
+It obeys the ranking rather than breaking it, because **the tile only exists while there is something to
+report**. An `.accessory` app has no Dock tile at all, so the app switches activation policy at runtime:
+idle demotes to `.accessory` and the icon leaves the Dock entirely; any non-idle workspace promotes it to
+`.regular` and the tile returns. Showing is immediate, hiding waits 4s — agent state flaps, and an icon
+entering and leaving the Dock on every flap is worse than one that lingers.
+
+Its ring is the accent only at rest, which is the one moment it is never seen. In practice the ring always
+carries a state colour, because the tile is only visible when there is a state.
 
 ---
 

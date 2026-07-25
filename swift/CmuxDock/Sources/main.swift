@@ -181,12 +181,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 	private var watcher: StateWatcher?
 	private var state = AgentState()
 
+	/// Hysteresis for hiding. Showing is immediate — an agent wanting attention
+	/// should not wait — but hiding is delayed, because agent state flaps
+	/// (working → idle → working within a second is normal) and an icon
+	/// entering and leaving the Dock on every flap is worse than one that
+	/// lingers.
+	private var hideWork: DispatchWorkItem?
+	private static let hideDelay: TimeInterval = 4
+
 	func applicationDidFinishLaunching(_ n: Notification) {
-		// Required. An .accessory / LSUIElement app has NO dock tile at all, so
-		// this app cannot be both invisible and tiled.
-		NSApp.setActivationPolicy(.regular)
-		NSApp.dockTile.contentView = tile
-		NSApp.dockTile.display()
+		// Start hidden. There is nothing to report until the first state
+		// arrives, and appearing for a moment at login just to vanish is worse
+		// than never appearing.
+		NSApp.setActivationPolicy(.accessory)
 
 		let url = FileManager.default.homeDirectoryForCurrentUser
 			.appendingPathComponent(".cmux/dock-state.json")
@@ -194,8 +201,49 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 			guard let self else { return }
 			self.state = s
 			self.tile.state = s
-			NSApp.dockTile.display()
+			self.applyVisibility(for: s)
 		}
+	}
+
+	/// The tile exists only while something is worth reporting.
+	///
+	/// This is the one way to have it both ways: an .accessory app has no dock
+	/// tile at all, so instead of being permanently visible or permanently
+	/// hidden, the activation policy is switched at runtime. Idle means
+	/// .accessory (no tile, no Cmd-Tab entry); anything else means .regular.
+	private func applyVisibility(for s: AgentState) {
+		let shouldShow = s.worst != .idle
+
+		hideWork?.cancel()
+		hideWork = nil
+
+		if shouldShow {
+			show()
+		} else {
+			let work = DispatchWorkItem { [weak self] in self?.hide() }
+			hideWork = work
+			DispatchQueue.main.asyncAfter(deadline: .now() + Self.hideDelay, execute: work)
+		}
+	}
+
+	private func show() {
+		guard NSApp.activationPolicy() != .regular else {
+			NSApp.dockTile.display()
+			return
+		}
+		NSApp.setActivationPolicy(.regular)
+		// The tile's content view does not survive the policy transition, so it
+		// has to be re-attached every time the app becomes .regular. Without
+		// this the icon comes back as the generic app icon.
+		NSApp.dockTile.contentView = tile
+		NSApp.dockTile.display()
+		NSLog("CmuxDock: shown (worst=%@)", state.worst.rawValue)
+	}
+
+	private func hide() {
+		guard NSApp.activationPolicy() != .accessory else { return }
+		NSApp.setActivationPolicy(.accessory)
+		NSLog("CmuxDock: hidden (idle)")
 	}
 
 	/// Dock icon context menu.

@@ -105,8 +105,18 @@ osascript -e 'tell application "System Events" to set picture of every desktop t
 
 ## CmuxDock — estado de agentes en el Dock de macOS
 
-Un tile en el Dock que muestra el estado agregado de los workspaces de cmux (*worst-wins*: error > atención
-> trabajando > reposo). El anillo en reposo es el acento; en cuanto hay estado real, manda el estado.
+Un tile en el Dock con el estado agregado de los workspaces de cmux (*worst-wins*: error > atención >
+trabajando > reposo).
+
+**El icono solo existe cuando hay algo que reportar.** En reposo la app se degrada a `.accessory` y
+desaparece del Dock (y de Cmd-Tab); en cuanto un workspace deja de estar idle se promociona a `.regular` y
+el tile vuelve. Aparecer es inmediato; ocultarse espera 4 s, porque el estado de los agentes oscila y un
+icono entrando y saliendo del Dock en cada oscilación molesta más que uno que se queda un momento de más.
+
+Esto es la consecuencia directa de que una app `.accessory` **no tiene tile**: "oculto" y "con tile" son
+excluyentes, así que la única forma de tener ambos es alternar la activation policy en runtime.
+`LSUIElement` está en `true` para que no parpadee en el Dock al arrancar — es solo la política *inicial*,
+`setActivationPolicy` la cambia en ambas direcciones.
 
 ```bash
 cd swift/CmuxDock && ./build.sh --install
