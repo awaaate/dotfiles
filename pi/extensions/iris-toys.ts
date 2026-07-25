@@ -37,9 +37,13 @@ export default function (pi: ExtensionAPI) {
 		const theme = ctx.ui.theme;
 
 		// ── Live context gauge ──────────────────────────────────────────────
-		// Always on, from session start. It reads the usage live inside render()
-		// rather than closing over a value, so the same widget stays correct as
-		// the session grows without being torn down and rebuilt.
+		// Below the editor and deliberately quiet: this is ambient, and ambient
+		// means you should be able to ignore it. It is a short fixed-width track
+		// rather than a full-width bar, and it stays in neutral greys until the
+		// number is actually worth reacting to.
+		//
+		// Reads usage inside render() rather than closing over a value, so the
+		// same widget stays correct as the session grows.
 		const drawGauge = () => {
 			ctx.ui.setWidget(
 				"iris.gauge",
@@ -48,39 +52,34 @@ export default function (pi: ExtensionAPI) {
 					render(width: number): string[] {
 						const usage = ctx.getContextUsage();
 						const pct = usage?.percent ?? null;
+						const cells = Math.min(18, Math.max(6, width - 16));
 
-						// Unknown is a real state, not zero: right after a compaction,
-						// and before the first response of a session, pi genuinely does
-						// not know the token count yet. Drawing an empty bar there would
-						// claim the context is empty, which is a different thing.
+						// Unknown is a real state, not zero: before the first response
+						// and right after a compaction pi does not know the token count.
+						// An empty bar would claim the context is empty, which is a
+						// different statement.
 						if (pct === null) {
-							const cells = Math.max(8, width - 20);
-							return [
-								"  " +
-									t.fg("borderMuted", "░".repeat(cells)) +
-									"  " +
-									t.fg("dim", "context ·  —"),
-							];
+							return ["  " + t.fg("borderMuted", "┈".repeat(cells) + "  —")];
 						}
 
 						const { colour, note } = pressure(pct);
-						const label = `${pct.toFixed(0)}%`;
-						// Reserve the label, the note and the padding, then give the
-						// bar whatever is left — so it fits a narrow pane too.
-						const cells = Math.max(8, width - label.length - note.length - 8);
-						const filled = bar(pct / 100, cells);
-						const empty = "░".repeat(Math.max(0, cells - [...filled].length));
+						const filled = Math.round((pct / 100) * cells);
+
+						// Grey until 75%. Colour is a signal, and a gauge that is
+						// always coloured has spent it before there is anything to say.
+						const fillColour: ThemeColor = pct >= 75 ? colour : "dim";
+						const textColour: ThemeColor = pct >= 75 ? colour : "borderMuted";
+
 						return [
 							"  " +
-								t.fg(colour, filled) +
-								t.fg("borderMuted", empty) +
-								"  " +
-								t.fg(colour, label) +
-								(note ? "  " + t.fg("dim", note) : ""),
+								t.fg(fillColour, "━".repeat(filled)) +
+								t.fg("borderMuted", "┈".repeat(Math.max(0, cells - filled))) +
+								t.fg(textColour, `  ${pct.toFixed(0)}%`) +
+								(note ? t.fg(colour, `  ${note}`) : ""),
 						];
 					},
 				}),
-				{ placement: "aboveEditor" },
+				{ placement: "belowEditor" },
 			);
 		};
 
