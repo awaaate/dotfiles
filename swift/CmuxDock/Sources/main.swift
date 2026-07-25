@@ -196,6 +196,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 	private let tile = TileView(frame: NSRect(x: 0, y: 0, width: 128, height: 128))
 	private var watcher: StateWatcher?
 	private var state = AgentState()
+	/// The visible surface on this machine. The Dock tile is kept because it
+	/// costs nothing, but the Dock here is autohidden at 16pt, so the pill
+	/// under the notch is what the user actually sees.
+	private let island = IslandWindow()
 
 	/// Hysteresis for hiding. Showing is immediate — an agent wanting attention
 	/// should not wait — but hiding is delayed, because agent state flaps
@@ -268,6 +272,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 	}
 
 	private func show() {
+		island.present()
+		island.state = state
 		guard NSApp.activationPolicy() != .regular else {
 			NSApp.dockTile.display()
 			return
@@ -282,6 +288,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 	}
 
 	private func hide() {
+		island.dismiss()
 		guard NSApp.activationPolicy() != .accessory else { return }
 		NSApp.setActivationPolicy(.accessory)
 		NSLog("CmuxDock: hidden (idle)")
@@ -376,6 +383,22 @@ func renderStates(to dir: String) -> Int32 {
 
 	try? FileManager.default.createDirectory(
 		atPath: dir, withIntermediateDirectories: true)
+
+	// Island: render the expanded panel at a few states.
+	for (name, st) in cases where name != "idle" {
+		let v = IslandView(frame: NSRect(x: 0, y: 0, width: 340, height: 150))
+		v.notchWidth = 185
+		v.notchHeight = 32
+		v.state = st
+		v.setMode(.expanded, animated: false, duration: 0)
+		if let rep = v.bitmapImageRepForCachingDisplay(in: v.bounds) {
+			v.cacheDisplay(in: v.bounds, to: rep)
+			if let png = rep.representation(using: .png, properties: [:]) {
+				try? png.write(to: URL(fileURLWithPath: "\(dir)/island-\(name).png"))
+				print("wrote \(dir)/island-\(name).png")
+			}
+		}
+	}
 
 	for (name, state) in cases {
 		let size = NSSize(width: 128, height: 128)

@@ -42,6 +42,7 @@ swiftc \
 	-framework AppKit \
 	-o "$MACOS/$APP_NAME" \
 	Sources/IrisTokens.swift \
+	Sources/Island.swift \
 	Sources/main.swift
 
 cp Info.plist "$BUNDLE/Contents/Info.plist"
