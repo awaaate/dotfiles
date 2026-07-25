@@ -5,6 +5,7 @@
 //   node tools/check-contrast.mjs          report + gate
 //   node tools/check-contrast.mjs --ramp   also dump the resolved ramp
 
+import { readFileSync } from 'node:fs';
 import { contrast, deltaEOk, hexToOklch } from './color.mjs';
 import { ink, accent, state, semantic, ansi } from './tokens.mjs';
 
@@ -105,6 +106,41 @@ let monotonic = true;
 for (let i = 1; i < Ls.length; i++) if (Ls[i] <= Ls[i - 1]) monotonic = false;
 if (!monotonic) failures++;
 console.log(`${monotonic ? '  ok ' : ' FAIL'}  ink ramp is strictly increasing in lightness`);
+
+// ── Documentation drift ─────────────────────────────────────────────────────
+// The configs are generated, so they cannot drift — but the docs are written
+// by hand and quote hex values, and they DID drift once: DESIGN.md carried an
+// error colour from before a lightness adjustment. Any hex in the docs must
+// resolve to a real token.
+console.log('\n── documented hex values match tokens ' + '─'.repeat(38));
+{
+  const known = new Set(
+    [...Object.values(ink), ...Object.values(accent), ...Object.values(state)].map((h) =>
+      h.toLowerCase(),
+    ),
+  );
+  const docsDir = new URL('../docs/', import.meta.url);
+  let stale = 0;
+  for (const file of ['DESIGN.md', 'AUDIT.md']) {
+    let text;
+    try {
+      text = readFileSync(new URL(file, docsDir), 'utf8');
+    } catch {
+      continue;
+    }
+    // Only check hexes presented as OUR tokens — inside backticks in a table
+    // row. AUDIT.md deliberately quotes foreign palettes (Kanagawa, TokyoNight)
+    // and those must not be flagged.
+    for (const [, hexVal] of text.matchAll(/^\|[^|]*\|\s*`(#[0-9a-fA-F]{6})`\s*\|/gm)) {
+      if (!known.has(hexVal.toLowerCase())) {
+        stale++;
+        failures++;
+        console.log(` FAIL  docs/${file}: ${hexVal} is not a current token value`);
+      }
+    }
+  }
+  if (stale === 0) console.log('  ok   every hex quoted as a token in docs/ resolves');
+}
 
 if (process.argv.includes('--ramp')) {
   console.log('\n── resolved values ' + '─'.repeat(57));

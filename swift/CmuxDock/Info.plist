@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleName</key>
+	<string>CmuxDock</string>
+	<key>CFBundleDisplayName</key>
+	<string>CmuxDock</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.iris.cmuxdock</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleExecutable</key>
+	<string>CmuxDock</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>13.0</string>
+	<!-- Deliberately NOT LSUIElement. An .accessory/LSUIElement app has no dock
+	     tile at all, so the app cannot be hidden and tiled at the same time.
+	     The activation policy is set to .regular in code to match. -->
+	<key>LSUIElement</key>
+	<false/>
+</dict>
+</plist>

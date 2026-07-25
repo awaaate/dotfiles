@@ -30,6 +30,7 @@
     "dockBadge": true,
     "showInMenuBar": true,
     "sound": "default",
+    "command": "\"$HOME/.config/cmux/dock-hook.sh\" >/dev/null 2>&1 &",
     "suppressOnlyFocusedSurface": true,
     "agentTurnComplete": "whenIdle",
     "agentIdleReminder": true,

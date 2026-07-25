@@ -107,7 +107,7 @@ category and carries no status meaning. There, the accent marks functions.
 | `success` | `#67d283` | added lines, passing, connected |
 | `info` | `#4fcdcd` | links, bash mode, ports |
 | `warning` | `#f1bf4e` | modified, pending, **needs attention** |
-| `error` | `#ed4952` | removed lines, failing |
+| `error` | `#f24e56` | removed lines, failing |
 | `special` | `#8bafff` | meta, keywords, untracked |
 
 ### Tinted surfaces
@@ -208,6 +208,11 @@ Deliberate choices:
 - `suppressOnlyFocusedSurface` is **on**. Never interrupt about the pane already being looked at.
 - Spinner sits **leading**, notification badge **trailing**. A spinner is transient ("busy") and a badge
   is persistent ("unread"); putting them in the same slot lets them trade places.
+
+**Intentional deviation:** `swift/CmuxDock` adds a fourth, always-visible signal below level 1 — a Dock
+tile showing aggregate agent state, worst-wins. It is passive like the unread ring, but survives cmux not
+being frontmost. Its resting ring is the accent (identity: "this is cmux"); the moment any workspace has
+real state, the state colour takes over.
 
 ---
 

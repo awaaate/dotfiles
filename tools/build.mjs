@@ -224,6 +224,41 @@ borders "\${options[@]}"
 `;
 emit('borders/bordersrc', borders);
 
+// ── swift tokens (CmuxDock) ─────────────────────────────────────────────────
+// Emitted rather than hand-written for the same reason as everything else: a
+// hand-copied hex in a second language is exactly how the four-palette drift
+// started. AppKit wants linear 0-1 sRGB components, so the conversion happens
+// here instead of at runtime.
+const swiftColor = (name, h, note) => {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
+  const f = (n) => n.toFixed(4);
+  return `    static let ${name.padEnd(10)} = NSColor(srgbRed: ${f(r)}, green: ${f(g)}, blue: ${f(b)}, alpha: 1) // ${h}${note ? '  ' + note : ''}`;
+};
+const swiftTokens = `// ${BANNER}
+// ${meta.name} tokens for the CmuxDock tile.
+
+import AppKit
+
+enum Iris {
+${swiftColor('bgBase', ink[0])}
+${swiftColor('bgRaised', ink[1])}
+${swiftColor('bgPanel', ink[2])}
+${swiftColor('border', ink[4])}
+${swiftColor('textDim', ink[6])}
+${swiftColor('text', ink[8])}
+${swiftColor('textBright', ink[9])}
+
+    // Identity. Used for the resting ring only — never to signal a state.
+${swiftColor('accent', accent.base)}
+
+    // States. Ranked worst-wins by the tile.
+${swiftColor('info', state.info, '— working')}
+${swiftColor('warning', state.warning, '— needs attention')}
+${swiftColor('error', state.error, '— failed')}
+}
+`;
+emit('swift/CmuxDock/Sources/IrisTokens.swift', swiftTokens);
+
 // ── cmux ────────────────────────────────────────────────────────────────────
 // Generated whole rather than colour-only: it is pure declarative config, and
 // generating it is what guarantees the palette cannot drift from the rest.
@@ -282,6 +317,17 @@ const cmux = {
     dockBadge: true,
     showInMenuBar: true,
     sound: 'default',
+    // Feeds the CmuxDock tile. This is `command`, not `hooks`, on purpose:
+    // hooks receive notification-policy JSON on stdin and must return updated
+    // policy on stdout within timeoutSeconds, and a failing hook makes cmux
+    // fall back to default notification behaviour. A tile that draws an icon
+    // has no business sitting in the delivery path — `command` is documented
+    // as running *alongside* delivery, so a broken script cannot suppress a
+    // notification.
+    //
+    // $HOME rather than an absolute path: this is run through a shell, so it
+    // expands, and the repo does not get pinned to one machine's username.
+    command: '"$HOME/.config/cmux/dock-hook.sh" >/dev/null 2>&1 &',
     // Never interrupt about the pane already being looked at.
     suppressOnlyFocusedSurface: true,
     // Sound and banner only when actually away from the machine.

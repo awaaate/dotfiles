@@ -103,6 +103,44 @@ cp ~/dotfiles/wallpapers/iris-dark-3024x1964.png ~/Pictures/
 osascript -e 'tell application "System Events" to set picture of every desktop to "'"$HOME"'/Pictures/iris-dark-3024x1964.png"'
 ```
 
+## CmuxDock — estado de agentes en el Dock de macOS
+
+Un tile en el Dock que muestra el estado agregado de los workspaces de cmux (*worst-wins*: error > atención
+> trabajando > reposo). El anillo en reposo es el acento; en cuanto hay estado real, manda el estado.
+
+```bash
+cd swift/CmuxDock && ./build.sh --install
+cp swift/CmuxDock/com.iris.cmuxdock.plist ~/Library/LaunchAgents/
+launchctl load ~/Library/LaunchAgents/com.iris.cmuxdock.plist
+cp tools/cmux-dock-hook.sh ~/.config/cmux/dock-hook.sh && chmod +x ~/.config/cmux/dock-hook.sh
+```
+
+Solo necesita las Command Line Tools (`swiftc`), no Xcode ni SwiftPM: un bundle de AppKit es un directorio
+con un `Info.plist` y un binario.
+
+**Por qué está partido en dos procesos.** cmux rechaza conexiones al socket desde fuera de sí mismo con
+`socketControlMode: cmuxOnly` — verificado en cmux 0.64.20, donde `ping`, `capabilities`, `list-windows`,
+`identify` y `workspace list` responden *"Access denied"*. Solo `cmux version` funciona sin socket. Así que
+la app, lanzada por launchd, **nunca** puede consultar a cmux. El hook sí, porque lo lanza cmux vía
+`notifications.command`; consulta, escribe `~/.cmux/dock-state.json`, y la app solo lee.
+
+Se usa `notifications.command` y no `notifications.hooks` a propósito: los *hooks* reciben JSON de política
+por stdin y deben devolver política actualizada por stdout dentro de `timeoutSeconds`, y si fallan cmux
+*"falls back to default notification behavior"*. Un icono no tiene por qué estar en la ruta de entrega.
+
+La app observa el **directorio**, no el archivo: el hook escribe con temp + `rename`, y un `rename` cambia
+el inode, así que un watcher sobre el archivo se quedaría sordo tras la primera escritura.
+
+`LSUIElement` está en `false` y la activation policy es `.regular` — **obligatorio**: una app `.accessory`
+no tiene tile en el Dock, así que no puede ser invisible y tener tile a la vez.
+
+Depuración:
+
+```bash
+log stream --predicate 'process == "CmuxDock"'
+cat ~/.cmux/dock-probe.log
+```
+
 ## Aplicar cambios en caliente
 
 ```bash
