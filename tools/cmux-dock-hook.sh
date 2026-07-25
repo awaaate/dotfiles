@@ -26,8 +26,22 @@
 
 set -uo pipefail
 
-CMUX="/Applications/cmux.app/Contents/MacOS/cmux"
+CMUX="${CMUX_BUNDLED_CLI_PATH:-/Applications/cmux.app/Contents/MacOS/cmux}"
 DIR="$HOME/.cmux"
+
+# How a cmux-spawned process authenticates, learned from cmux's own generated
+# agent hooks (~/.cmux/hooks/cmux-codex-hook-*.sh): cmux exports
+# CMUX_SOCKET_PATH into the environment and its hooks pass it back as
+# `--socket <path>`. Without it, a query from outside answers "Access denied".
+#
+# Not a way around `socketControlMode: cmuxOnly` — the variable only exists in
+# processes cmux started. Tested from an ordinary shell with the socket path
+# supplied by hand: the connection no longer refuses, it simply hangs (SIGTERM),
+# so there is a further identity check beyond knowing the path.
+CMUX_ARGS=""
+if [ -n "${CMUX_SOCKET_PATH:-}" ]; then
+	CMUX_ARGS="--socket $CMUX_SOCKET_PATH"
+fi
 STATE="$DIR/dock-state.json"
 PROBE="$DIR/dock-probe.log"
 PROBE_RUNS=25
@@ -55,8 +69,12 @@ if [ "$PROBE_RUNS" -gt 0 ] && [ "$(grep -c '^=== run' "$PROBE" 2>/dev/null || ec
 		else
 			echo "  (stdin is a tty)"
 		fi
+		echo "-- CMUX_SOCKET_PATH --"
+		echo "  ${CMUX_SOCKET_PATH:-(not set by cmux)}"
+		echo "-- CMUX_SURFACE_ID --"
+		echo "  ${CMUX_SURFACE_ID:-(not set by cmux)}"
 		echo "-- socket reachable from here? --"
-		if out=$(CMUX_QUIET=1 "$CMUX" workspace list --json 2>&1); then
+		if out=$(CMUX_QUIET=1 "$CMUX" $CMUX_ARGS workspace list --json 2>&1); then
 			echo "  YES"
 			printf '%s\n' "$out" | head -20 | sed 's/^/    /'
 		else
@@ -73,7 +91,7 @@ workspaces_json="[]"
 
 # `workspace list` is the canonical form; the legacy `list-workspaces` prints a
 # deprecation hint that contaminates stdout. CMUX_QUIET silences the rest.
-if raw=$(CMUX_QUIET=1 "$CMUX" workspace list --json 2>/dev/null); then
+if raw=$(CMUX_QUIET=1 "$CMUX" $CMUX_ARGS workspace list --json 2>/dev/null); then
 	workspaces_json=$(printf '%s' "$raw" | python3 -c '
 import json, sys
 
