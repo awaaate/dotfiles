@@ -69,6 +69,17 @@ cursor-style-blink = false
 shell-integration-features = cursor,sudo,title
 
 # ───────────────────────────────────────────────────────────────────────────
+# KEYBOARD
+# ───────────────────────────────────────────────────────────────────────────
+# On macOS, Option+letter types a special character (˜ ç œ …) instead of
+# sending Alt. Unset by default, which silently breaks every alt-based binding
+# in a TUI — pi's alt+n/t/k/r for new/tree/fork/resume among them.
+#
+# `left`, not `true`, on purpose: only the LEFT Option becomes Alt. The right
+# one keeps composing accents, so á é í ó ú ñ still work.
+macos-option-as-alt = left
+
+# ───────────────────────────────────────────────────────────────────────────
 # SCROLLBACK
 # ───────────────────────────────────────────────────────────────────────────
 scrollback-limit = 20000
