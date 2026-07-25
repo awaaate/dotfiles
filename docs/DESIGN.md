@@ -110,6 +110,20 @@ category and carries no status meaning. There, the accent marks functions.
 | `error` | `#f24e56` | removed lines, failing |
 | `special` | `#8bafff` | meta, keywords, untracked |
 
+### Chrome surface
+
+The system bar and the notch island, at `#414048` — deliberately **lighter than the border tone**
+(`ink[4]`), so the desktop furniture reads as a layer above the windows instead of another near-black slab
+merging into them.
+
+This forces a second set: on a surface this light the darkest status colour, `error`, falls to **2.6:1**,
+under the 3:1 WCAG non-text minimum — a low-battery icon has to be seen. `stateOnChrome` lifts each status
+colour's lightness while keeping its hue and meaning, restoring `error` to 4.9:1. Anything drawn on the bar
+or the island uses that set; everything on a terminal background uses the normal one.
+
+`check-contrast.mjs` asserts `bgChrome` stays lighter than `borderMuted`, so nudging the ramp cannot
+silently invert the relationship.
+
 ### Tinted surfaces
 
 State-carrying block backgrounds, all at `ink[2]`'s lightness so blocks sit at one elevation and only the

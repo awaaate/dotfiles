@@ -100,6 +100,34 @@ export const surfaceTint = {
   special: tint(265), //  blue    — injected / meta
 };
 
+// ── Chrome surface ──────────────────────────────────────────────────────────
+// The system bar and the notch island. Deliberately LIGHTER than the border
+// tone (ink[4], what JankyBorders draws for an inactive window) so the desktop
+// furniture reads as a distinct layer sitting above the windows, rather than
+// as another near-black slab merging into them.
+//
+// The relationship is the point, not the value: check-contrast.mjs asserts
+// bgChrome is lighter than borderMuted, so nudging the ramp cannot silently
+// invert it.
+export const bgChrome = hex(0.375, 0.014, 292);
+
+// Status colours for use ON bgChrome.
+//
+// The normal set is tuned for a near-black terminal; on a surface this light
+// the darkest of them (error, L 0.65) falls to 2.6:1, under the 3:1 WCAG
+// non-text minimum. A low-battery icon or an error dot on the bar has to be
+// *seen*, so the chrome surface gets lifted variants rather than the surface
+// being darkened back down to accommodate them.
+//
+// Same hues, same meanings — only lightness moves.
+export const stateOnChrome = {
+  success: hex(0.860, 0.140, 150),
+  info: hex(0.860, 0.095, 195),
+  warning: hex(0.900, 0.120, 85),
+  error: hex(0.780, 0.170, 22),
+  special: hex(0.850, 0.110, 265),
+};
+
 // ── Semantic surface / text assignments ─────────────────────────────────────
 // Apps consume THESE, not the raw ramp. One name, one job.
 export const semantic = {

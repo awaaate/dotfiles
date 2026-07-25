@@ -11,7 +11,9 @@
 import { writeFileSync, readFileSync, mkdirSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ink, accent, state, surfaceTint, semantic, ansi, categorical, meta } from './tokens.mjs';
+import {
+  ink, accent, state, surfaceTint, semantic, ansi, categorical, bgChrome, stateOnChrome, meta,
+} from './tokens.mjs';
 import { argb, bare, hex } from './color.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -169,12 +171,14 @@ export INK9=${argb(ink[9])}
 export BLACK=${argb(ink[0])}
 export WHITE=${argb(ink[8])}
 export GREY=${argb(ink[6])}
-export RED=${argb(state.error)}
-export GREEN=${argb(state.success)}
-export YELLOW=${argb(state.warning)}
-export ORANGE=${argb(state.warning)}
-export BLUE=${argb(state.special)}
-export CYAN=${argb(state.info)}
+# Lifted variants: these are drawn ON the bar, which is much lighter than a
+# terminal, and the normal set drops under 3:1 there.
+export RED=${argb(stateOnChrome.error)}
+export GREEN=${argb(stateOnChrome.success)}
+export YELLOW=${argb(stateOnChrome.warning)}
+export ORANGE=${argb(stateOnChrome.warning)}
+export BLUE=${argb(stateOnChrome.special)}
+export CYAN=${argb(stateOnChrome.info)}
 export MAGENTA=${argb(accent.base)}
 export TRANSPARENT=0x00000000
 
@@ -185,12 +189,12 @@ export GREY_TRANSP=${argb(ink[6], 0.27)}
 
 # The bar itself is translucent so the wallpaper reads through; items sit on
 # opaque-enough fills to keep their labels legible over any wallpaper region.
-export BAR_COLOR=${argb(ink[0], 0.4)}
-export BG0=${argb(ink[0], 0.8)}
-export BG1=${argb(ink[1], 0.67)}
-export BG2=${argb(ink[2], 0.8)}
+export BAR_COLOR=${argb(bgChrome, 0.42)}
+export BG0=${argb(bgChrome, 0.8)}
+export BG1=${argb(bgChrome, 0.55)}
+export BG2=${argb(bgChrome, 0.72)}
 
-export ITEM_BG=${argb(ink[2], 0.4)}
+export ITEM_BG=${argb(bgChrome, 0.38)}
 export ITEM_BG_ACTIVE=${argb(accent.wash, 0.67)}
 
 # ── Fonts ──────────────────────────────────────────────────────────────────
@@ -243,6 +247,7 @@ enum Iris {
 ${swiftColor('bgBase', ink[0])}
 ${swiftColor('bgRaised', ink[1])}
 ${swiftColor('bgPanel', ink[2])}
+${swiftColor('bgChrome', bgChrome, '— system bar / notch island')}
 ${swiftColor('border', ink[4])}
 ${swiftColor('textDim', ink[6])}
 ${swiftColor('text', ink[8])}
@@ -255,6 +260,12 @@ ${swiftColor('accent', accent.base)}
 ${swiftColor('info', state.info, '— working')}
 ${swiftColor('warning', state.warning, '— needs attention')}
 ${swiftColor('error', state.error, '— failed')}
+
+    // Lifted for the notch island, which sits on bgChrome.
+${swiftColor('infoUp', stateOnChrome.info)}
+${swiftColor('warningUp', stateOnChrome.warning)}
+${swiftColor('errorUp', stateOnChrome.error)}
+${swiftColor('accentUp', accent.bright)}
 }
 `;
 emit('swift/CmuxDock/Sources/IrisTokens.swift', swiftTokens);

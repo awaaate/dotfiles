@@ -7,7 +7,7 @@
 
 import { readFileSync } from 'node:fs';
 import { contrast, deltaEOk, hexToOklch } from './color.mjs';
-import { ink, accent, state, semantic, ansi } from './tokens.mjs';
+import { ink, accent, state, semantic, ansi, bgChrome, stateOnChrome } from './tokens.mjs';
 
 let failures = 0;
 const rows = [];
@@ -106,6 +106,18 @@ let monotonic = true;
 for (let i = 1; i < Ls.length; i++) if (Ls[i] <= Ls[i - 1]) monotonic = false;
 if (!monotonic) failures++;
 console.log(`${monotonic ? '  ok ' : ' FAIL'}  ink ramp is strictly increasing in lightness`);
+
+// ── Chrome surface ──────────────────────────────────────────────────────────
+console.log('\n── chrome surface (bar + notch island) ' + '─'.repeat(37));
+// The whole point of bgChrome is that it out-lightens the border tone. If the
+// ramp is ever nudged the wrong way this inverts silently, so assert it.
+gate('bgChrome vs borderMuted', hexToOklch(bgChrome).L / hexToOklch(semantic.borderMuted).L, 1.05, 'x');
+gate('text on bgChrome', contrast(semantic.text, bgChrome), 4.5);
+gate('textBright on bgChrome', contrast(semantic.textBright, bgChrome), 7.0);
+gate('textDim on bgChrome', contrast(semantic.textDim, bgChrome), 1.4);
+for (const [n, v] of Object.entries(stateOnChrome)) gate(`${n} on bgChrome`, contrast(v, bgChrome), 3.0);
+gate('accent.bright on bgChrome', contrast(accent.bright, bgChrome), 3.0);
+console.log(rows.splice(0).join('\n'));
 
 // ── Documentation drift ─────────────────────────────────────────────────────
 // The configs are generated, so they cannot drift — but the docs are written

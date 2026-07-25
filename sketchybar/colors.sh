@@ -18,12 +18,14 @@ export INK9=0xfff0eff3
 export BLACK=0xff0a090f
 export WHITE=0xffcccbd1
 export GREY=0xff74737c
-export RED=0xfff24e56
-export GREEN=0xff67d283
-export YELLOW=0xfff1bf4e
-export ORANGE=0xfff1bf4e
-export BLUE=0xff8bafff
-export CYAN=0xff4fcdcd
+# Lifted variants: these are drawn ON the bar, which is much lighter than a
+# terminal, and the normal set drops under 3:1 there.
+export RED=0xffff9592
+export GREEN=0xff89eb9f
+export YELLOW=0xffffd988
+export ORANGE=0xffffd988
+export BLUE=0xffb6ceff
+export CYAN=0xff80e5e4
 export MAGENTA=0xffbe84fb
 export TRANSPARENT=0x00000000
 
@@ -34,12 +36,12 @@ export GREY_TRANSP=0x4574737c
 
 # The bar itself is translucent so the wallpaper reads through; items sit on
 # opaque-enough fills to keep their labels legible over any wallpaper region.
-export BAR_COLOR=0x660a090f
-export BG0=0xcc0a090f
-export BG1=0xab14131a
-export BG2=0xcc1e1d25
+export BAR_COLOR=0x6b414048
+export BG0=0xcc414048
+export BG1=0x8c414048
+export BG2=0xb8414048
 
-export ITEM_BG=0x661e1d25
+export ITEM_BG=0x61414048
 export ITEM_BG_ACTIVE=0xab301d43
 
 # ── Fonts ──────────────────────────────────────────────────────────────────

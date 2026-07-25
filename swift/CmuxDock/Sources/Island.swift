@@ -232,12 +232,14 @@ final class IslandView: NSView {
 		state.workspaces.filter { $0.status != .idle }
 	}
 
+	/// Lifted variants: this panel sits on bgChrome, where the normal status
+	/// set drops under the 3:1 non-text minimum.
 	private var tint: NSColor {
 		switch state.worst {
-		case .idle: return Iris.accent
-		case .working: return Iris.info
-		case .attention: return Iris.warning
-		case .error: return Iris.error
+		case .idle: return Iris.accentUp
+		case .working: return Iris.infoUp
+		case .attention: return Iris.warningUp
+		case .error: return Iris.errorUp
 		}
 	}
 
@@ -336,7 +338,11 @@ final class IslandView: NSView {
 		body.line(to: NSPoint(x: r.maxX, y: r.maxY))
 		body.close()
 
-		Iris.bgBase.setFill()
+		// bgChrome, not bgBase: the user asked for the bar and this panel to sit
+		// lighter than the border tone. It costs the "merges with the bezel"
+		// illusion — the panel now reads as a distinct layer over the notch
+		// rather than as an extension of it.
+		Iris.bgChrome.setFill()
 		body.fill()
 
 		// Cross-fade the two layouts across the animation rather than snapping,
@@ -406,7 +412,7 @@ final class IslandView: NSView {
 			let rowRect = NSRect(x: r.minX + 8, y: y, width: r.width - 16, height: Self.rowHeight)
 
 			if hoveredRow == i {
-				Iris.bgPanel.setFill()
+				Iris.textBright.withAlphaComponent(0.10).setFill()
 				NSBezierPath(roundedRect: rowRect.insetBy(dx: 0, dy: 2), xRadius: 7, yRadius: 7)
 					.fill()
 			}
@@ -436,9 +442,9 @@ final class IslandView: NSView {
 	private func colour(for s: AgentState.Status) -> NSColor {
 		switch s {
 		case .idle: return Iris.textDim
-		case .working: return Iris.info
-		case .attention: return Iris.warning
-		case .error: return Iris.error
+		case .working: return Iris.infoUp
+		case .attention: return Iris.warningUp
+		case .error: return Iris.errorUp
 		}
 	}
 

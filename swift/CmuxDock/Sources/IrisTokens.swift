@@ -7,6 +7,7 @@ enum Iris {
     static let bgBase     = NSColor(srgbRed: 0.0392, green: 0.0353, blue: 0.0588, alpha: 1) // #0a090f
     static let bgRaised   = NSColor(srgbRed: 0.0784, green: 0.0745, blue: 0.1020, alpha: 1) // #14131a
     static let bgPanel    = NSColor(srgbRed: 0.1176, green: 0.1137, blue: 0.1451, alpha: 1) // #1e1d25
+    static let bgChrome   = NSColor(srgbRed: 0.2549, green: 0.2510, blue: 0.2824, alpha: 1) // #414048  — system bar / notch island
     static let border     = NSColor(srgbRed: 0.2353, green: 0.2275, blue: 0.2667, alpha: 1) // #3c3a44
     static let textDim    = NSColor(srgbRed: 0.4549, green: 0.4510, blue: 0.4863, alpha: 1) // #74737c
     static let text       = NSColor(srgbRed: 0.8000, green: 0.7961, blue: 0.8196, alpha: 1) // #cccbd1
@@ -19,4 +20,10 @@ enum Iris {
     static let info       = NSColor(srgbRed: 0.3098, green: 0.8039, blue: 0.8039, alpha: 1) // #4fcdcd  — working
     static let warning    = NSColor(srgbRed: 0.9451, green: 0.7490, blue: 0.3059, alpha: 1) // #f1bf4e  — needs attention
     static let error      = NSColor(srgbRed: 0.9490, green: 0.3059, blue: 0.3373, alpha: 1) // #f24e56  — failed
+
+    // Lifted for the notch island, which sits on bgChrome.
+    static let infoUp     = NSColor(srgbRed: 0.5020, green: 0.8980, blue: 0.8941, alpha: 1) // #80e5e4
+    static let warningUp  = NSColor(srgbRed: 1.0000, green: 0.8510, blue: 0.5333, alpha: 1) // #ffd988
+    static let errorUp    = NSColor(srgbRed: 1.0000, green: 0.5843, blue: 0.5725, alpha: 1) // #ff9592
+    static let accentUp   = NSColor(srgbRed: 0.8471, green: 0.7216, blue: 1.0000, alpha: 1) // #d8b8ff
 }
