@@ -59,49 +59,23 @@ node tools/wallpaper.mjs      # regenerar fondos
 
 ```bash
 git clone https://github.com/awaaate/dotfiles.git ~/dotfiles
+cd ~/dotfiles && ./install.sh
 ```
 
-Copia de seguridad **antes** de sobreescribir nada:
+`install.sh` hace copia de seguridad de todo lo que vaya a sobreescribir (en
+`~/dotfiles-backup-<fecha>`), copia, y verifica que cada destino existe. Prueba primero con
+`./install.sh --dry-run`, que no toca nada.
 
-```bash
-BK=~/dotfiles-backup-$(date +%Y%m%d-%H%M%S); mkdir -p "$BK"; for p in ~/.config/borders ~/.config/cmux ~/.config/ghostty ~/.config/karabiner ~/.config/nvim ~/.config/sketchybar ~/.pi/agent ~/.zshrc ~/.p10k.zsh ~/.aerospace.toml; do [ -e "$p" ] && cp -R "$p" "$BK/"; done; echo "backup en $BK"
-```
+**El script es la fuente de verdad de qué se instala y dónde.** Esta lista vivía antes en prosa aquí y se
+desincronizó: una instalación limpia se quedaba sin los atajos de pi y sin las seis plantillas, así que el
+panel de bienvenida anunciaba comandos que no existían en esa máquina. `tools/check-install.mjs` verifica
+ahora que todo lo que el repo trae tenga destino en el instalador.
 
-Directorios de destino:
+pi se copia archivo por archivo a propósito, para no tocar `auth.json`, sesiones ni cachés de modelos que
+viven en el mismo directorio.
 
-```bash
-mkdir -p ~/.config/{borders,cmux,ghostty/themes,karabiner,nvim,sketchybar} ~/.pi/agent/{extensions,themes} ~/Pictures
-```
-
-Configuración de macOS y terminal:
-
-```bash
-cp ~/dotfiles/.aerospace.toml ~/.aerospace.toml
-rsync -a ~/dotfiles/borders/ ~/.config/borders/
-rsync -a ~/dotfiles/cmux/ ~/.config/cmux/
-rsync -a ~/dotfiles/ghostty/ ~/.config/ghostty/
-rsync -a ~/dotfiles/karabiner/ ~/.config/karabiner/
-rsync -a ~/dotfiles/nvim/ ~/.config/nvim/
-rsync -a ~/dotfiles/sketchybar/ ~/.config/sketchybar/
-cp ~/dotfiles/zsh/.zshrc ~/.zshrc
-cp ~/dotfiles/zsh/.p10k.zsh ~/.p10k.zsh
-```
-
-pi se copia por archivos concretos, para **no tocar credenciales, modelos ni sesiones**:
-
-```bash
-cp ~/dotfiles/pi/settings.json ~/.pi/agent/settings.json
-rsync -a ~/dotfiles/pi/extensions/ ~/.pi/agent/extensions/
-rsync -a ~/dotfiles/pi/themes/ ~/.pi/agent/themes/
-```
-
-Fondo de pantalla — elige la resolución de tu monitor (`3024x1964` es la XDR interna; también hay
-`5120x2880`, `3840x2160`, `2560x1440` y una variante `iris-light-3024x1964.png`):
-
-```bash
-cp ~/dotfiles/wallpapers/iris-dark-3024x1964.png ~/Pictures/
-osascript -e 'tell application "System Events" to set picture of every desktop to "'"$HOME"'/Pictures/iris-dark-3024x1964.png"'
-```
+Lo que **no** automatiza, y por qué: el fondo de pantalla (depende de tu resolución) y CmuxDock (compila
+una app y carga un LaunchAgent). El script imprime los comandos exactos al terminar.
 
 ## CmuxDock — estado de agentes en el Dock de macOS
 
@@ -184,15 +158,22 @@ rsync -a ~/.config/cmux/ cmux/
 cp ~/.zshrc zsh/.zshrc && cp ~/.p10k.zsh zsh/.p10k.zsh
 rsync -a ~/.pi/agent/extensions/ pi/extensions/
 rsync -a ~/.pi/agent/themes/ pi/themes/
+rsync -a ~/.pi/agent/prompts/ pi/prompts/
+cp ~/.pi/agent/keybindings.json pi/keybindings.json
 
 # lastChangelogVersion es estado efímero de pi; no se versiona
 jq 'del(.lastChangelogVersion)' ~/.pi/agent/settings.json > pi/settings.json
 ```
 
+Esta lista es el reverso del `MAP` de `install.sh`, y por tanto puede desincronizarse igual. Si añades algo
+al repo, añádelo en los dos sitios — `tools/check-install.mjs` te avisa del lado del instalador.
+
 ## Validación
 
 ```bash
 node tools/check-contrast.mjs                                    # contraste y separación semántica
+node tools/check-install.mjs                                     # ¿instala todo lo que el repo trae?
+node tools/check-pi.mjs                                          # tema, teclas y ajustes de pi
 node tools/build.mjs --check                                     # ¿generados == tokens?
 /Applications/Ghostty.app/Contents/MacOS/ghostty +validate-config
 /Applications/cmux.app/Contents/MacOS/cmux config doctor
