@@ -1,26 +1,9 @@
 {
-  "app.session.new": [
-    "alt+n"
-  ],
-  "app.session.tree": [
-    "alt+t"
-  ],
-  "app.session.fork": [
-    "alt+k"
-  ],
-  "app.session.resume": [
-    "alt+r"
-  ],
-  "tui.editor.cursorDown": [
-    "down",
-    "ctrl+n"
-  ],
-  "app.tools.expand": [
-    "ctrl+o",
-    "alt+o"
-  ],
-  "app.message.copy": [
-    "ctrl+x",
-    "alt+c"
-  ]
+  "app.session.new": ["alt+ctrl+super+shift+n"],
+  "app.session.tree": ["alt+ctrl+super+shift+t"],
+  "app.session.fork": ["alt+ctrl+super+shift+f"],
+  "app.session.resume": ["alt+ctrl+super+shift+r"],
+  "tui.editor.cursorDown": ["down", "ctrl+n"],
+  "app.tools.expand": ["ctrl+o"],
+  "app.message.copy": ["ctrl+x"]
 }

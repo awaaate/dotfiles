@@ -48,8 +48,24 @@ function macKey(spec: string): string {
 	};
 	const parts = spec.split("+");
 	const key = parts.pop() ?? "";
-	const mods = parts.map((m) => GLYPH[m.toLowerCase()] ?? `${m}+`).join("");
-	return mods + (key.length === 1 ? key.toUpperCase() : key);
+	const mods = new Set(parts.map((m) => m.toLowerCase()));
+
+	// ⌃⌥⌘ together is the Hyper key. Spelling it out as four glyphs makes a
+	// hint longer than the label it describes, so it collapses to one mark —
+	// the same key the Karabiner config calls Hyper.
+	let prefix = "";
+	if (mods.has("ctrl") && mods.has("alt") && (mods.has("super") || mods.has("cmd"))) {
+		prefix = "✦";
+		mods.delete("ctrl");
+		mods.delete("alt");
+		mods.delete("super");
+		mods.delete("cmd");
+	}
+	// Fixed order so two bindings with the same modifiers always look the same.
+	for (const m of ["ctrl", "alt", "shift", "super", "cmd", "meta"]) {
+		if (mods.has(m)) prefix += GLYPH[m];
+	}
+	return prefix + (key.length === 1 ? key.toUpperCase() : key);
 }
 
 /**
