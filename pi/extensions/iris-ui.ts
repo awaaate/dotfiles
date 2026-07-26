@@ -86,6 +86,34 @@ function pressure(pct: number): { colour: ThemeColor; note: string } {
 	return { colour: "dim", note: "" };
 }
 
+/**
+ * Fade a run of border characters from the accent into the neutral border.
+ *
+ * The panel is an IDENTITY element, so accent on its frame is on-system —
+ * unlike the context gauge, which reports STATUS and must never use it. The
+ * fade puts the brightest edge next to the title and lets the frame dissolve
+ * away from it, which is the reading order.
+ *
+ * Only theme keys are available (no arbitrary hex), so the ramp is the three
+ * stops the theme actually exposes.
+ */
+const BORDER_FADE: ThemeColor[] = ["accent", "border", "borderMuted"];
+
+function fadedRule(t: { fg(c: ThemeColor, s: string): string }, char: string, len: number): string {
+	if (len <= 0) return "";
+	// Weighted so the accent segment is short and the tail is long: a fade that
+	// spends half the line on the bright stop reads as a coloured rule, not a fade.
+	const weights = [0.18, 0.28, 0.54];
+	let out = "";
+	let used = 0;
+	for (let i = 0; i < BORDER_FADE.length; i++) {
+		const n = i === BORDER_FADE.length - 1 ? len - used : Math.round(len * weights[i]);
+		if (n > 0) out += t.fg(BORDER_FADE[i], char.repeat(n));
+		used += n;
+	}
+	return out;
+}
+
 export default function (pi: ExtensionAPI) {
 	pi.on("session_start", (_event, ctx) => {
 		if (ctx.mode !== "tui") return;
@@ -212,16 +240,25 @@ export default function (pi: ExtensionAPI) {
 					return ` ${B("│")}${content}${" ".repeat(pad)}${B("│")}`;
 				};
 
-				const title = ` ${theme.fg("accent", theme.bold("pi"))} ${theme.fg("dim", "·")} ${theme.fg("text", project())} `;
-				const top = ` ${B("╭─")}${title}${B("─".repeat(Math.max(0, inner - visibleWidth(title) - 2)))}${B("╮")}`;
+				const title = ` ${theme.fg("accent", theme.bold("✦ pi"))} ${theme.fg("borderMuted", "·")} ${theme.fg("text", project())} `;
+				const top =
+					` ${theme.fg("accent", "╭─")}${title}` +
+					`${fadedRule(theme, "─", Math.max(0, inner - visibleWidth(title) - 2))}${B("╮")}`;
+				// Bottom stays uniformly quiet: two lit edges would fight, and the
+				// eye should land on the title, not the frame.
 				const bottom = ` ${B(`╰${"─".repeat(inner)}╯`)}`;
 
 				// ── Left column: what this session IS ──────────────────────────
-				const left: string[] = [
-					`${theme.fg("accent", "✦")}  ${theme.fg("text", ctx.model?.id ?? "no model")}`,
-				];
-				if (ctx.thinkingLevel) left.push(`   ${theme.fg("muted", ctx.thinkingLevel)}`);
-				left.push(`   ${theme.fg("dim", ctx.cwd.replace(homedir(), "~"))}`);
+				// Labelled rows rather than a bare list: the values line up, and a
+				// glance can find the one it wants instead of parsing all three.
+				// padEnd must exceed the longest label, or the longest one ends up
+				// with no gap at all — "effort" is exactly 6 characters.
+				const LABEL_W = 8;
+				const field = (label: string, value: string, colour: ThemeColor = "text") =>
+					`${theme.fg("borderMuted", label.padEnd(LABEL_W))}${theme.fg(colour, value)}`;
+				const left: string[] = [field("model", ctx.model?.id ?? "no model")];
+				if (ctx.thinkingLevel) left.push(field("effort", ctx.thinkingLevel, "muted"));
+				left.push(field("cwd", ctx.cwd.replace(homedir(), "~"), "dim"));
 
 				// ── Right column: how to drive it ──────────────────────────────
 				const right: Array<[string, string]> = [];
@@ -254,7 +291,7 @@ export default function (pi: ExtensionAPI) {
 						const lPad = " ".repeat(Math.max(0, leftW - visibleWidth(l)));
 						const r =
 							i === 0
-								? theme.fg("muted", theme.bold("getting started"))
+								? theme.fg("accent", theme.bold("getting started"))
 								: right[i - 1]
 									? hint(right[i - 1])
 									: "";
