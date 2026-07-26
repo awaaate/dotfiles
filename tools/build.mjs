@@ -96,15 +96,21 @@ const piTheme = {
     syntaxOperator: accent.dim,
     syntaxPunctuation: ink[7],
 
-    // A heat ramp — reasoning effort climbs from cold neutral through the
-    // accent into amber. Reads as intensity, not as five unrelated colours.
+    // An intensity ramp, entirely within the accent hue: reasoning effort
+    // climbs from cold neutral to a lit violet-white.
+    //
+    // It used to jump to amber at xhigh and yellow at max. Two problems. A hue
+    // change reads as a change of KIND rather than of degree, so "more effort"
+    // looked like "different mode". And with xhigh as the default it was not a
+    // ramp at all — just a permanently amber dot, the only warm pixel in a
+    // violet interface.
     thinkingOff: ink[5],
     thinkingMinimal: accent.deep,
     thinkingLow: accent.dim,
     thinkingMedium: accent.base,
     thinkingHigh: accent.bright,
-    thinkingXhigh: state.warning,
-    thinkingMax: ansi.brightYellow,
+    thinkingXhigh: accent.pale,
+    thinkingMax: accent.lit,
 
     bashMode: state.info,
   },

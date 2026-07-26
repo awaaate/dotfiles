@@ -119,6 +119,37 @@ for (const [n, v] of Object.entries(stateOnChrome)) gate(`${n} on bgChrome`, con
 gate('accent.bright on bgChrome', contrast(accent.bright, bgChrome), 3.0);
 console.log(rows.splice(0).join('\n'));
 
+// ── Reasoning-effort ramp ───────────────────────────────────────────────────
+// It must read as ONE scale getting more intense, which means climbing in
+// lightness and staying in a single hue. It previously jumped to amber at the
+// top, which reads as a change of kind rather than of degree — and with xhigh
+// as the default it was not a ramp at all, just a permanently warm dot in an
+// otherwise violet interface.
+console.log('\n── reasoning-effort ramp ' + '─'.repeat(51));
+{
+  const ramp = ['deep', 'dim', 'base', 'bright', 'pale', 'lit'].map((k) => accent[k]);
+  let climbing = true;
+  for (let i = 1; i < ramp.length; i++) {
+    if (hexToOklch(ramp[i]).L <= hexToOklch(ramp[i - 1]).L) climbing = false;
+  }
+  if (!climbing) failures++;
+  console.log(`${climbing ? '  ok ' : ' FAIL'}  ramp climbs in lightness at every step`);
+
+  // One hue across the whole ramp, so "more" never looks like "different".
+  const hues = ramp.map((h) => hexToOklch(h).H);
+  const spread = Math.max(...hues) - Math.min(...hues);
+  const oneHue = spread <= 5;
+  if (!oneHue) failures++;
+  console.log(
+    `${oneHue ? '  ok ' : ' FAIL'}  ramp stays in one hue` +
+      `${' '.repeat(24)}${spread.toFixed(1)}°  (max 5.0°)`,
+  );
+
+  gate('brightest ramp stop on bgBase', contrast(accent.lit, semantic.bgBase), 7.0);
+  gate('dimmest ramp stop on bgBase', contrast(accent.deep, semantic.bgBase), 2.0);
+}
+console.log(rows.splice(0).join('\n'));
+
 // ── Documentation drift ─────────────────────────────────────────────────────
 // The configs are generated, so they cannot drift — but the docs are written
 // by hand and quote hex values, and they DID drift once: DESIGN.md carried an

@@ -70,6 +70,12 @@ export const accent = {
   dim: hex(0.620, 0.160, H_IRIS), //    secondary accent text, muted borders
   base: hex(0.720, 0.175, H_IRIS), //   THE accent — focus ring, active pane, cursor
   bright: hex(0.835, 0.120, H_IRIS), // hover, headings, emphasis-on-accent
+  // Two more stops above `bright`, so an intensity ramp can climb past the
+  // accent without leaving its hue. Used by the reasoning-effort scale, which
+  // previously jumped to amber at the top — a hue change reads as a change of
+  // KIND, not of degree, and it made the one warm pixel in a violet UI.
+  pale: hex(0.905, 0.075, H_IRIS),
+  lit: hex(0.960, 0.035, H_IRIS),
 };
 
 // ── States ──────────────────────────────────────────────────────────────────

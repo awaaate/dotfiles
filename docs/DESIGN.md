@@ -99,6 +99,14 @@ category and carries no status meaning. There, the accent marks functions.
 | `accent.dim` | `#9d69d2` | secondary accent text, operators |
 | `accent.base` | `#be84fb` | **the** accent — focus ring, active pane, cursor |
 | `accent.bright` | `#d8b8ff` | hover, headings |
+| `accent.pale` | `#e8d7ff` | reasoning-effort ramp, upper stop |
+| `accent.lit` | `#f5eeff` | reasoning-effort ramp, top stop |
+
+The last two exist so the reasoning-effort scale can climb past the accent without leaving its hue. It
+used to end in amber and yellow, which reads as a change of *kind* rather than of degree — and with
+`xhigh` as the default it was not a ramp at all, just a permanently warm dot in an otherwise violet
+interface. `check-contrast.mjs` now asserts the ramp climbs in lightness at every step and stays within
+5° of hue.
 
 ### Status
 
