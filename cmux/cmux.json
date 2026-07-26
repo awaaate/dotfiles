@@ -1,0 +1,105 @@
+{
+  "$schema": "https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/data/cmux.schema.json",
+  "schemaVersion": 1,
+  "paneBorderColor": "#3c3a44",
+  "activePaneBorderColor": "#be84fb",
+  "app": {
+    "appearance": "dark",
+    "appIcon": "dark",
+    "minimalMode": false,
+    "newWorkspacePlacement": "afterCurrent",
+    "workspaceInheritWorkingDirectory": true,
+    "confirmQuit": "dirty-only",
+    "reorderOnNotification": true,
+    "commandPaletteSearchesAllSurfaces": true,
+    "focusHistoryIncludesPanesAndTabs": true,
+    "focusPaneOnFirstClick": true,
+    "openMarkdownInCmuxViewer": true
+  },
+  "terminal": {
+    "sessionContentAlignment": "center",
+    "sessionContentMaxWidth": false,
+    "showScrollBar": true,
+    "scrollSpeed": 1,
+    "autoResumeAgentSessions": true,
+    "copyOnSelect": true
+  },
+  "notifications": {
+    "unreadPaneRing": true,
+    "paneFlash": false,
+    "dockBadge": true,
+    "showInMenuBar": true,
+    "sound": "default",
+    "command": "\"$HOME/.config/cmux/dock-hook.sh\" >/dev/null 2>&1 &",
+    "suppressOnlyFocusedSurface": true,
+    "agentTurnComplete": "whenIdle",
+    "agentIdleReminder": true,
+    "agentPermissionPrompt": true
+  },
+  "sidebar": {
+    "hideAllDetails": false,
+    "showBranchDirectory": true,
+    "showWorkspaceDescription": true,
+    "showNotificationMessage": true,
+    "showAgentActivity": true,
+    "showProgress": true,
+    "showPullRequests": true,
+    "makePullRequestsClickable": true,
+    "showPorts": true,
+    "showSSH": true,
+    "showLog": true,
+    "openPortLinksInCmuxBrowser": true,
+    "openPullRequestLinksInCmuxBrowser": true,
+    "watchGitStatus": true,
+    "wrapWorkspaceTitles": false,
+    "branchLayout": "vertical",
+    "notificationMessageLineLimit": 5,
+    "loadingSpinnerPosition": "leading",
+    "notificationBadgePosition": "trailing"
+  },
+  "workspaceColors": {
+    "indicatorStyle": "washRail",
+    "selectionColor": "#301d43",
+    "notificationBadgeColor": "#f1bf4e",
+    "colors": {
+      "Iris": "#ba8bed",
+      "Rose": "#df7ec1",
+      "Red": "#f27c7b",
+      "Ember": "#e98940",
+      "Amber": "#ce9c0f",
+      "Lime": "#99b13b",
+      "Green": "#57bd72",
+      "Jade": "#00c0a0",
+      "Teal": "#00bbc0",
+      "Sky": "#00b5e4",
+      "Blue": "#71a3ff",
+      "Slate": "#55545d"
+    }
+  },
+  "sidebarAppearance": {
+    "matchTerminalBackground": true,
+    "tintColor": "#14131a",
+    "darkModeTintColor": "#14131a",
+    "lightModeTintColor": null,
+    "tintOpacity": 0.18
+  },
+  "automation": {
+    "claudeCodeIntegration": true,
+    "geminiIntegration": true,
+    "suppressSubagentNotifications": true,
+    "socketControlMode": "cmuxOnly"
+  },
+  "browser": {
+    "theme": "dark",
+    "openTerminalLinksInCmuxBrowser": true,
+    "interceptTerminalOpenCommandInCmuxBrowser": true
+  },
+  "diffViewer": {
+    "defaultLayout": "split"
+  },
+  "markdown": {
+    "fontSize": 15,
+    "fontFamily": "",
+    "maxWidth": 760
+  }
+}

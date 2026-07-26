@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.iris.cmuxdock</string>
+
+	<!-- `open -a` rather than exec'ing the binary directly: launching through
+	     LaunchServices is what registers the app with the Dock. A bare exec
+	     gives a running process with no tile, which is the whole point lost. -->
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/bin/open</string>
+		<string>-a</string>
+		<string>/Applications/CmuxDock.app</string>
+	</array>
+
+	<key>RunAtLoad</key>
+	<true/>
+
+	<!-- Not KeepAlive. `open` exits immediately after handing off to
+	     LaunchServices, so KeepAlive would relaunch it in a tight loop. -->
+	<key>KeepAlive</key>
+	<false/>
+
+	<key>StandardOutPath</key>
+	<string>/tmp/cmuxdock.out.log</string>
+	<key>StandardErrorPath</key>
+	<string>/tmp/cmuxdock.err.log</string>
+</dict>
+</plist>

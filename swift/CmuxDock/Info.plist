@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleName</key>
+	<string>CmuxDock</string>
+	<key>CFBundleDisplayName</key>
+	<string>CmuxDock</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.iris.cmuxdock</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleExecutable</key>
+	<string>CmuxDock</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>13.0</string>
+	<!-- Starts as an agent so there is no Dock flash at login before the first
+	     state is read. An .accessory app has NO dock tile, so the tile only
+	     exists while the app promotes itself to .regular — which it does at
+	     runtime whenever any workspace is non-idle, and reverses when things
+	     go quiet. LSUIElement is only the STARTING policy; setActivationPolicy
+	     overrides it in both directions. -->
+	<key>LSUIElement</key>
+	<true/>
+</dict>
+</plist>

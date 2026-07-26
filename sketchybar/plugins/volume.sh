@@ -17,21 +17,20 @@ fi
 
 MUTED=$(osascript -e 'output muted of (get volume settings)')
 
+# Volume is a LEVEL, never a status — the glyph carries it, so the icon stays
+# neutral at every level. Muted was previously red, which reads as "something
+# is broken" for what is a deliberate user choice.
 if [ "$MUTED" = "true" ]; then
   ICON=$VOLUME_0
-  COLOR=$RED
 elif [ "$VOLUME" -ge 66 ]; then
   ICON=$VOLUME_100
-  COLOR=$WHITE
 elif [ "$VOLUME" -ge 33 ]; then
   ICON=$VOLUME_66
-  COLOR=$WHITE
 elif [ "$VOLUME" -ge 1 ]; then
   ICON=$VOLUME_33
-  COLOR=$WHITE
 else
   ICON=$VOLUME_0
-  COLOR=$GREY
 fi
+COLOR=$GREY
 
 sketchybar --set "$NAME" icon="$ICON" icon.color="$COLOR" label="$VOLUME%" label.color="$WHITE"

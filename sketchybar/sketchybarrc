@@ -1,14 +1,34 @@
 #!/bin/bash
 
 # ═══════════════════════════════════════════════════════════════════════════
-# SKETCHYBAR CONFIG - Inspired by Nikolaidp24
+# SKETCHYBAR — Iris
+# Layout, spacing and semantics follow docs/DESIGN.md in the dotfiles repo.
 # ═══════════════════════════════════════════════════════════════════════════
 
 source "$CONFIG_DIR/colors.sh"
 source "$CONFIG_DIR/icons.sh"
+source "$CONFIG_DIR/workspaces_list.sh"
 
 PLUGIN_DIR="$CONFIG_DIR/plugins"
-FONT="SF Pro"
+
+# Fonts come from colors.sh so plugins and this file cannot disagree. "SF Pro"
+# used to be hardcoded here and in the old per-workspace plugin, but it is NOT
+# installed on this machine — sketchybar falls back silently on an unknown
+# family instead of erroring, so every icon rendered as a tofu box while the
+# config looked correct. Every glyph in icons.sh is verified against
+# FONT_ICON's cmap table.
+FONT="$FONT_UI"
+NERD="$FONT_ICON"
+
+# ── Scales (docs/DESIGN.md §6) ─────────────────────────────────────────────
+# Spacing is a 4px base with a 2px half-step for dense chrome. Previously
+# padding was an arbitrary mix of 4/8/10.
+PAD_XS=2   # between items inside one group
+PAD_SM=4   # icon → its own label
+PAD_MD=8   # inside an item, at its edges
+PAD_LG=12  # between groups
+RADIUS=8   # radius.soft — was 10, which read as a pill rather than a panel
+ITEM_H=26
 
 # ───────────────────────────────────────────────────────────────────────────
 # BAR
@@ -18,123 +38,102 @@ bar=(
   color="$BAR_COLOR"
   position=top
   sticky=on
-  padding_right=10
-  padding_left=10
+  padding_right="$PAD_LG"
+  padding_left="$PAD_LG"
   topmost=off
   blur_radius=50
-  shadow=on
+  shadow=off
 )
 sketchybar --bar "${bar[@]}"
 
 # ───────────────────────────────────────────────────────────────────────────
 # DEFAULTS
 # ───────────────────────────────────────────────────────────────────────────
+# Icons recede, values read. An icon only takes a status colour when it IS
+# reporting that status — see the battery and volume plugins.
 defaults=(
   updates=when_shown
-  icon.font="$FONT:Bold:14.0"
-  icon.color="$WHITE"
-  icon.padding_left=4
-  icon.padding_right=4
-  label.font="$FONT:Semibold:13.0"
+  icon.font="$NERD:Bold:14.0"
+  icon.color="$GREY"
+  icon.padding_left="$PAD_MD"
+  icon.padding_right="$PAD_SM"
+  label.font="$FONT:Bold:13.0"
   label.color="$WHITE"
-  label.padding_left=4
-  label.padding_right=4
-  background.height=28
-  background.corner_radius=10
+  label.padding_left=0
+  label.padding_right="$PAD_MD"
+  padding_left="$PAD_XS"
+  padding_right="$PAD_XS"
+  background.height="$ITEM_H"
+  background.corner_radius="$RADIUS"
 )
 sketchybar --default "${defaults[@]}"
 
 # ═══════════════════════════════════════════════════════════════════════════
-# LEFT - WORKSPACES
+# LEFT — WORKSPACES  (identity: where am I)
 # ═══════════════════════════════════════════════════════════════════════════
 
 sketchybar --add event aerospace_workspace_change
 
-# Add workspaces
-for ws in B T C X M W O D S; do
+# Derived from .aerospace.toml, never hardcoded. The old literal list was
+# missing workspace K, so a workspace holding real windows never appeared.
+for ws in $(sb_workspaces); do
   sketchybar --add item "space.$ws" left \
-    --subscribe "space.$ws" aerospace_workspace_change front_app_switched \
     --set "space.$ws" \
       drawing=off \
       background.color="$ITEM_BG" \
-      background.corner_radius=10 \
+      background.corner_radius="$RADIUS" \
       background.drawing=on \
       background.border_color="$ACCENT" \
       background.border_width=0 \
-      background.height=28 \
+      background.height="$ITEM_H" \
       icon="$ws" \
       icon.font="$FONT:Bold:13.0" \
-      icon.padding_left=10 \
-      icon.padding_right=4 \
-      label.font="sketchybar-app-font:Regular:14.0" \
-      label.padding_right=10 \
-      label.padding_left=2 \
+      icon.padding_left="$PAD_MD" \
+      icon.padding_right="$PAD_SM" \
+      label.font="sketchybar-app-font:Regular:16.0" \
+      label.padding_right="$PAD_MD" \
       label.y_offset=-1 \
-      click_script="aerospace workspace $ws" \
-      script="$PLUGIN_DIR/aerospace.sh $ws"
+      click_script="aerospace workspace $ws"
 done
 
-# Load icons on startup
-for ws in B T C X M W O D S; do
-  apps=$(aerospace list-windows --workspace "$ws" 2>/dev/null | awk -F'|' '{gsub(/^ *| *$/, "", $2); print $2}' | sort -u)
-  
-  if [ -n "$apps" ]; then
-    sketchybar --set "space.$ws" drawing=on
-    
-    source "$CONFIG_DIR/plugins/icon_map.sh"
-    icon_strip=""
-    while IFS= read -r app; do
-      [ -z "$app" ] && continue
-      __icon_map "$app"
-      if [ -n "$icon_result" ] && [ "$icon_result" != ":default:" ]; then
-        icon_strip+="$icon_result"
-      fi
-    done <<< "$apps"
-    
-    sketchybar --set "space.$ws" label="$icon_strip"
-  fi
-done
+# One hidden item owns refreshing ALL workspaces, so an event fires the batch
+# script exactly once instead of once per item. The previous per-item script
+# fanned out to 399 invocations per app switch — see plugins/workspaces.sh.
+sketchybar --add item workspaces_watcher left \
+  --set workspaces_watcher \
+    drawing=off \
+    updates=on \
+    script="$PLUGIN_DIR/workspaces.sh" \
+  --subscribe workspaces_watcher aerospace_workspace_change front_app_switched
 
-# Separator
-sketchybar --add item separator left \
-  --set separator \
-    icon="$CHEVRON" \
-    icon.font="$FONT:Heavy:16.0" \
-    icon.color="$GREY" \
-    icon.padding_left=10 \
-    icon.padding_right=6 \
-    label.drawing=off \
-    background.drawing=off
-
-# Front app
+# Front app. Separated from the workspace cluster by a gap rather than the old
+# chevron glyph — a "›" implies navigation, which is not what a divider means.
 sketchybar --add item front_app left \
   --set front_app \
     icon.drawing=off \
     label.font="$FONT:Bold:13.0" \
     label.color="$WHITE" \
+    label.padding_left="$PAD_LG" \
     background.drawing=off \
     script="$PLUGIN_DIR/front_app.sh" \
   --subscribe front_app front_app_switched
 
 # ═══════════════════════════════════════════════════════════════════════════
-# CENTER - MEDIA
+# CENTER — MEDIA  (hidden unless something is playing)
 # ═══════════════════════════════════════════════════════════════════════════
 
 sketchybar --add item media center \
   --set media \
     icon="$MUSIC_PLAY" \
-    icon.font="$FONT:Regular:18.0" \
+    icon.font="$NERD:Regular:16.0" \
     icon.color="$GREEN" \
-    icon.padding_left=10 \
-    icon.padding_right=8 \
     label.font="$FONT:Regular:12.0" \
     label.color="$WHITE" \
     label.max_chars=35 \
-    label.padding_right=10 \
     scroll_texts=on \
     background.color="$BG1" \
-    background.corner_radius=10 \
-    background.height=28 \
+    background.corner_radius="$RADIUS" \
+    background.height="$ITEM_H" \
     background.drawing=on \
     drawing=off \
     update_freq=5 \
@@ -142,79 +141,81 @@ sketchybar --add item media center \
     click_script="open -a Spotify"
 
 # ═══════════════════════════════════════════════════════════════════════════
-# RIGHT - SYSTEM
+# RIGHT — first added sits furthest right.
+# Two groups, deliberately not one: the clock is not a system metric, and
+# bracketing it with CPU and battery implied it was.
 # ═══════════════════════════════════════════════════════════════════════════
 
-# Clock
+# ── Clock (own group, rightmost) ───────────────────────────────────────────
 sketchybar --add item clock right \
   --set clock \
     icon="$CLOCK" \
-    icon.font="$FONT:Regular:16.0" \
-    icon.color="$ACCENT" \
-    icon.padding_left=10 \
+    icon.font="$NERD:Regular:15.0" \
     label.font="$FONT:Bold:12.0" \
-    label.padding_right=10 \
-    background.drawing=off \
+    padding_left="$PAD_LG" \
+    background.color="$BG1" \
+    background.corner_radius="$RADIUS" \
+    background.height="$ITEM_H" \
+    background.drawing=on \
     update_freq=10 \
     script="$PLUGIN_DIR/clock.sh"
 
-# Battery
+# ── System group ───────────────────────────────────────────────────────────
+sketchybar --add graph cpu_graph right 40 \
+  --set cpu_graph \
+    graph.color="$ACCENT" \
+    graph.fill_color="$ACCENT_TRANSPARENT" \
+    graph.line_width=1.0 \
+    background.drawing=off \
+    label.drawing=off \
+    icon.drawing=off \
+    padding_right="$PAD_MD"
+
+sketchybar --add item cpu right \
+  --set cpu \
+    icon="$CPU" \
+    icon.font="$NERD:Regular:14.0" \
+    label.font="$FONT:Regular:12.0" \
+    label.padding_right="$PAD_XS" \
+    background.drawing=off \
+    update_freq=5 \
+    script="$PLUGIN_DIR/cpu.sh"
+
 sketchybar --add item battery right \
   --set battery \
-    icon.font="$FONT:Regular:18.0" \
-    icon.padding_left=8 \
+    icon.font="$NERD:Regular:16.0" \
     label.font="$FONT:Regular:12.0" \
-    label.padding_right=8 \
     background.drawing=off \
     update_freq=120 \
     updates=on \
     script="$PLUGIN_DIR/battery.sh" \
   --subscribe battery power_source_change system_woke
 
-# Volume
 sketchybar --add item volume right \
   --set volume \
-    icon.font="$FONT:Regular:16.0" \
-    icon.padding_left=8 \
-    label.font="$FONT:Regular:12.0" \
-    label.padding_right=8 \
+    icon.font="$NERD:Regular:15.0" \
+    label.drawing=off \
     background.drawing=off \
     script="$PLUGIN_DIR/volume.sh" \
   --subscribe volume volume_change mouse.clicked
 
-# CPU
-sketchybar --add item cpu right \
-  --set cpu \
-    icon="$CPU" \
-    icon.font="$FONT:Regular:14.0" \
-    icon.color="$WHITE" \
-    icon.padding_left=8 \
-    label.font="$FONT:Regular:11.0" \
-    label.padding_right=4 \
+# WiFi. The plugin already existed but was never added to the bar, so network
+# state was invisible.
+sketchybar --add item wifi right \
+  --set wifi \
+    icon.font="$NERD:Regular:15.0" \
+    label.font="$FONT:Regular:12.0" \
+    label.max_chars=14 \
     background.drawing=off \
-    update_freq=5 \
-    script="$PLUGIN_DIR/cpu.sh"
+    update_freq=30 \
+    script="$PLUGIN_DIR/wifi.sh" \
+  --subscribe wifi wifi_change system_woke
 
-# CPU Graph
-sketchybar --add graph cpu_graph right 40 \
-  --set cpu_graph \
-    graph.color="$ACCENT" \
-    graph.fill_color="$ACCENT_TRANSPARENT" \
-    graph.line_width=1.0 \
-    background.color="$BG2" \
-    background.corner_radius=6 \
-    background.height=20 \
-    background.drawing=on \
-    label.drawing=off \
-    icon.drawing=off \
-    padding_right=8
-
-# Bracket around right items
-sketchybar --add bracket status cpu cpu_graph volume battery clock \
-  --set status \
+sketchybar --add bracket system wifi volume battery cpu cpu_graph \
+  --set system \
     background.color="$BG1" \
-    background.corner_radius=10 \
-    background.height=28 \
+    background.corner_radius="$RADIUS" \
+    background.height="$ITEM_H" \
     background.drawing=on
 
 # ═══════════════════════════════════════════════════════════════════════════

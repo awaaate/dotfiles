@@ -3,6 +3,14 @@
 # Optimized for productivity - Hyper key window management
 # ═══════════════════════════════════════════════════════════════════════════
 
+# Formato de configuración (v2). En v2 los workspaces persistentes ya NO se
+# infieren de los bindings: se declaran explícitamente abajo.
+config-version = 2
+
+# Workspaces persistentes (en v1 se inferían de los bindings; en v2 hay que
+# declararlos). Son los mismos que usas en los atajos y en las window-rules.
+persistent-workspaces = ['B', 'T', 'C', 'X', 'K', 'M', 'W', 'O', 'D', 'S']
+
 # ───────────────────────────────────────────────────────────────────────────
 # STARTUP
 # ───────────────────────────────────────────────────────────────────────────
@@ -14,7 +22,7 @@ start-at-login = true
 # Notify sketchybar on workspace change
 exec-on-workspace-change = [
   '/bin/bash', '-c',
-  'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE'
+  '/opt/homebrew/bin/sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE'
 ]
 
 # ───────────────────────────────────────────────────────────────────────────
@@ -28,7 +36,8 @@ default-root-container-orientation = 'auto'
 
 # Mouse follows focus
 on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
-on-focus-changed = 'move-mouse window-lazy-center'
+# DESACTIVADO: causaba tirones/bucle con focus-follows-mouse (cursor saltando en cada cambio de foco)
+# on-focus-changed = 'move-mouse window-lazy-center'
 
 # Unhide hidden apps (disable cmd-h)
 automatically-unhide-macos-hidden-apps = true
@@ -60,7 +69,7 @@ outer.right = 4
 # 1=Browser 2=Terminal 3=Code 4=Codex 5=Claude 6=Messages 7=WhatsApp 8=OrbStack 9=Docs
 # ───────────────────────────────────────────────────────────────────────────
 alt-cmd-ctrl-1 = ['workspace B', 'exec-and-forget open -a "Google Chrome"']
-alt-cmd-ctrl-2 = ['workspace T', 'exec-and-forget open -a "Ghostty"']
+alt-cmd-ctrl-2 = ['workspace T', 'exec-and-forget open -a "cmux"']
 alt-cmd-ctrl-3 = ['workspace C', 'exec-and-forget open -a "Cursor"']
 alt-cmd-ctrl-4 = ['workspace X', 'exec-and-forget open -a "Codex"']
 alt-cmd-ctrl-5 = ['workspace K', 'exec-and-forget open -a "Claude"']
@@ -197,6 +206,12 @@ if.app-id = 'org.mozilla.firefox'
 run = 'move-node-to-workspace B'
 
 # Terminal → T
+# cmux is the primary terminal; Ghostty stays mapped so a stray Ghostty window
+# still lands on T instead of wherever it happens to open.
+[[on-window-detected]]
+if.app-id = 'com.cmuxterm.app'
+run = 'move-node-to-workspace T'
+
 [[on-window-detected]]
 if.app-id = 'com.mitchellh.ghostty'
 run = 'move-node-to-workspace T'

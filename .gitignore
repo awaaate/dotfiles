@@ -4,3 +4,4 @@
 *.backup
 automatic_backups/
 .claude/
+swift/CmuxDock/dist/
