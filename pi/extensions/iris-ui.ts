@@ -1,4 +1,4 @@
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI, ThemeColor } from "@earendil-works/pi-coding-agent";
 import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
 import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
@@ -76,6 +76,16 @@ function boundKey(id: string): string | undefined {
 	return typeof key === "string" && key.length > 0 ? key : undefined;
 }
 
+/**
+ * Context pressure. Grey until it matters — colour is a signal, and a gauge
+ * that is always coloured has spent it before there is anything to say.
+ */
+function pressure(pct: number): { colour: ThemeColor; note: string } {
+	if (pct >= 90) return { colour: "error", note: "compacting soon" };
+	if (pct >= 75) return { colour: "warning", note: "" };
+	return { colour: "dim", note: "" };
+}
+
 export default function (pi: ExtensionAPI) {
 	pi.on("session_start", (_event, ctx) => {
 		if (ctx.mode !== "tui") return;
@@ -84,6 +94,92 @@ export default function (pi: ExtensionAPI) {
 
 		ctx.ui.setTitle(`pi · ${project()}`);
 		ctx.ui.setHiddenThinkingLabel("✦ reasoning");
+
+		// ── Above the input: state, right-aligned ──────────────────────────
+		// Everything here is "what am I about to talk to", which is exactly the
+		// question you ask in the moment before typing. Right-aligned so it sits
+		// out of the way of the prompt itself.
+		const THINKING_DOT: Record<string, ThemeColor> = {
+			off: "thinkingOff",
+			minimal: "thinkingMinimal",
+			low: "thinkingLow",
+			medium: "thinkingMedium",
+			high: "thinkingHigh",
+			xhigh: "thinkingXhigh",
+			max: "thinkingMax",
+		};
+
+		ctx.ui.setWidget(
+			"iris.state",
+			(_tui, t) => ({
+				invalidate() {},
+				render(width: number): string[] {
+					const level = ctx.thinkingLevel;
+					const parts: string[] = [];
+					if (level) {
+						// The dot carries the effort level as colour, so the ramp is
+						// readable without reading.
+						parts.push(`${t.fg(THINKING_DOT[level] ?? "dim", "●")} ${t.fg("muted", level)}`);
+					}
+					if (ctx.model?.id) parts.push(t.fg("dim", ctx.model.id));
+					const name = pi.getSessionName();
+					if (name) parts.push(t.fg("accent", name));
+					if (parts.length === 0) return [];
+
+					const line = parts.join(t.fg("borderMuted", " · "));
+					const pad = Math.max(0, width - visibleWidth(line) - 2);
+					return [" ".repeat(pad) + line];
+				},
+			}),
+			{ placement: "aboveEditor" },
+		);
+
+		// ── Below the input: context on the left, how-to on the right ──────
+		ctx.ui.setWidget(
+			"iris.rail",
+			(_tui, t) => ({
+				invalidate() {},
+				render(width: number): string[] {
+					const usage = ctx.getContextUsage();
+					const pct = usage?.percent ?? null;
+					const cells = 14;
+
+					let gauge: string;
+					if (pct === null) {
+						// Unknown is a real state, not zero: before the first response
+						// and right after a compaction pi does not know the count. An
+						// empty bar would claim the context is empty instead.
+						gauge = t.fg("borderMuted", "┈".repeat(cells) + "  —");
+					} else {
+						const { colour, note } = pressure(pct);
+						const filled = Math.round((pct / 100) * cells);
+						gauge =
+							t.fg(colour, "━".repeat(filled)) +
+							t.fg("borderMuted", "┈".repeat(Math.max(0, cells - filled))) +
+							t.fg(pct >= 75 ? colour : "borderMuted", `  ${pct.toFixed(0)}%`) +
+							(note ? t.fg(colour, `  ${note}`) : "");
+					}
+
+					const hints = [
+						["/", "commands"],
+						["!", "bash"],
+					]
+						.map(([k, l]) => `${t.fg("muted", k)} ${t.fg("dim", l)}`)
+						.join(t.fg("borderMuted", " · "));
+
+					const gap = width - visibleWidth(gauge) - visibleWidth(hints) - 4;
+					// Drop the hints rather than wrapping or overlapping them.
+					if (gap < 3) return ["  " + gauge];
+					return ["  " + gauge + " ".repeat(gap) + hints];
+				},
+			}),
+			{ placement: "belowEditor" },
+		);
+
+		pi.on("session_shutdown", () => {
+			ctx.ui.setWidget("iris.state", undefined);
+			ctx.ui.setWidget("iris.rail", undefined);
+		});
 
 		ctx.ui.setHeader((_tui, theme) => ({
 			// render() reads the theme live rather than pre-baking colours, so

@@ -36,60 +36,9 @@ export default function (pi: ExtensionAPI) {
 
 		const theme = ctx.ui.theme;
 
-		// ── Live context gauge ──────────────────────────────────────────────
-		// Below the editor and deliberately quiet: this is ambient, and ambient
-		// means you should be able to ignore it. It is a short fixed-width track
-		// rather than a full-width bar, and it stays in neutral greys until the
-		// number is actually worth reacting to.
-		//
-		// Reads usage inside render() rather than closing over a value, so the
-		// same widget stays correct as the session grows.
-		const drawGauge = () => {
-			ctx.ui.setWidget(
-				"iris.gauge",
-				(_tui, t) => ({
-					invalidate() {},
-					render(width: number): string[] {
-						const usage = ctx.getContextUsage();
-						const pct = usage?.percent ?? null;
-						const cells = Math.min(18, Math.max(6, width - 16));
-
-						// Unknown is a real state, not zero: before the first response
-						// and right after a compaction pi does not know the token count.
-						// An empty bar would claim the context is empty, which is a
-						// different statement.
-						if (pct === null) {
-							return ["  " + t.fg("borderMuted", "┈".repeat(cells) + "  —")];
-						}
-
-						const { colour, note } = pressure(pct);
-						const filled = Math.round((pct / 100) * cells);
-
-						// Grey until 75%. Colour is a signal, and a gauge that is
-						// always coloured has spent it before there is anything to say.
-						const fillColour: ThemeColor = pct >= 75 ? colour : "dim";
-						const textColour: ThemeColor = pct >= 75 ? colour : "borderMuted";
-
-						return [
-							"  " +
-								t.fg(fillColour, "━".repeat(filled)) +
-								t.fg("borderMuted", "┈".repeat(Math.max(0, cells - filled))) +
-								t.fg(textColour, `  ${pct.toFixed(0)}%`) +
-								(note ? t.fg(colour, `  ${note}`) : ""),
-						];
-					},
-				}),
-				{ placement: "belowEditor" },
-			);
-		};
-
-		// The widget re-renders on its own when pi redraws, but these force it
-		// at the moments the number actually moves.
-		pi.on("turn_start", drawGauge);
-		pi.on("turn_end", drawGauge);
-		pi.on("message_end", drawGauge);
-		pi.on("session_compact", drawGauge);
-		drawGauge();
+		// The context gauge now lives in iris-ui.ts, alongside the rest of the
+		// furniture around the input box, so the two cannot disagree about where
+		// it sits or what it says.
 
 		// ── /palette ────────────────────────────────────────────────────────
 		// The whole repo is a design system; being able to see it from inside
@@ -151,7 +100,6 @@ export default function (pi: ExtensionAPI) {
 		});
 
 		pi.on("session_shutdown", () => {
-			ctx.ui.setWidget("iris.gauge", undefined);
 			ctx.ui.setWidget("iris.palette", undefined);
 		});
 	});
