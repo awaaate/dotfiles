@@ -55,7 +55,7 @@ export const THEMES = {
   azur: { name: 'Azur', accentHue: 225, stops: { base: [0.68, 0.16] } }, // minΔE 0.117 vs special
 };
 
-export const ACTIVE = 'fucsia';
+export const ACTIVE = 'azur';
 
 // ── States (shared by every theme) ──────────────────────────────────────────
 // Each answers "what happened". None may be confused with any theme's accent,
