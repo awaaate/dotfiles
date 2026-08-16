@@ -5,11 +5,14 @@
 
 # Formato de configuración (v2). En v2 los workspaces persistentes ya NO se
 # infieren de los bindings: se declaran explícitamente abajo.
-config-version = 2
-
-# Workspaces persistentes (en v1 se inferían de los bindings; en v2 hay que
-# declararlos). Son los mismos que usas en los atajos y en las window-rules.
-persistent-workspaces = ['B', 'T', 'C', 'X', 'K', 'M', 'W', 'O', 'D', 'S']
+#
+# DESACTIVADO: AeroSpace 0.19.2-Beta (lo instalado) rechaza ambas claves con
+# "Unknown top-level key" y se niega a cargar el archivo ENTERO. El formato v2
+# llega en una versión posterior. En v1 los workspaces persistentes se infieren
+# de los bindings, que siguen abajo, así que no se pierde ninguno.
+# Reactivar las dos líneas al actualizar AeroSpace.
+# config-version = 2
+# persistent-workspaces = ['B', 'T', 'C', 'X', 'K', 'M', 'W', 'O', 'D', 'S']
 
 # ───────────────────────────────────────────────────────────────────────────
 # STARTUP
