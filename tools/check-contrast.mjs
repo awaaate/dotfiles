@@ -161,10 +161,15 @@ console.log('\n── every theme (active and not) ' + '─'.repeat(44));
 for (const slug of Object.keys(THEMES)) {
   const t = makeTheme(slug);
   const tag = (s) => `[${slug}] ${s}`;
-  // Identity must never be mistaken for failure or attention.
-  gate(tag('accent.base vs error'), deltaEOk(t.accent.base, state.error), 0.1, 'ΔE');
+  // Identity must never be mistaken for ANY state. Warm accents' nearest
+  // threats are error/warning; blue accents' are info/special — so base is
+  // gated against all five rather than a hand-picked pair.
+  for (const [sn, sv] of Object.entries(state)) {
+    gate(tag(`accent.base vs ${sn}`), deltaEOk(t.accent.base, sv), 0.1, 'ΔE');
+  }
   gate(tag('accent.bright vs error'), deltaEOk(t.accent.bright, state.error), 0.1, 'ΔE');
-  gate(tag('accent.base vs warning'), deltaEOk(t.accent.base, state.warning), 0.1, 'ΔE');
+  // The wash must keep even dim text legible on a selected-and-focused row.
+  gate(tag('textDim on bgAccent'), contrast(t.semantic.textDim, t.semantic.bgAccent), 3.0);
   // The accent's day jobs: focus ring (non-text, 3:1) and accent text (4.5:1).
   gate(tag('accent.base on bgBase'), contrast(t.accent.base, t.semantic.bgBase), 4.5);
   gate(tag('accent.bright on bgAccent'), contrast(t.accent.bright, t.semantic.bgAccent), 4.5);

@@ -69,6 +69,13 @@ cambiar de tema jamás cambia lo que un color *significa*, solo el aspecto de la
 | iris | 305° | `#be84fb` | 0.120 (special) | el original del rediseño |
 | rosa | 348° | `#f171b8` | 0.130 (error) | chicle, cálido |
 | lima | 110° | `#abac00` | 0.122 (success) | fósforo ácido retro |
+| azur | 225° | `#00a8d4` | 0.117 (special) | cian eléctrico — el único azul viable |
+
+Azur existe gracias a un override por tema de las paradas del acento (`stops` en `THEMES`): los
+hues azules reciben su croma sRGB a menor luminosidad que los cálidos, así que su `base` baja a
+L 0.68 — lo más oscuro que permite el gate de 4.5:1 sobre el fondo. Un azul más profundo es
+imposible bajo este sistema sin rediseñar los colores de estado: a luminosidad legible, el arco
+195°–265° pertenece a `info` y `special`.
 
 Para cambiar: edita `ACTIVE` en `tools/tokens.mjs` y regenera. `build.mjs` reapunta él mismo
 `theme =` en `ghostty/config` y `"theme"` en `pi/settings.json`; los temas de ghostty y pi se
