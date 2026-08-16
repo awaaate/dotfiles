@@ -53,6 +53,17 @@ export const THEMES = {
   // 4.5:1 text gate allows on bgBase. Deeper blues cannot exist under this
   // system without redesigning the state colours themselves.
   azur: { name: 'Azur', accentHue: 225, stops: { base: [0.68, 0.16] } }, // minΔE 0.117 vs special
+  // The SECOND blue pocket, opposite the first: where azur ducks UNDER the
+  // state colours in lightness, cielo floats ABOVE them — powder blue at
+  // L 0.87, where distance from info/special comes from lightness rather
+  // than hue. sRGB clips chroma hard up there (~0.066 effective), so the
+  // accent is soft by construction. base moves the top of the ramp with it:
+  // bright/pale/lit are lifted so the effort scale still climbs.
+  cielo: {
+    name: 'Cielo',
+    accentHue: 250,
+    stops: { base: [0.87, 0.1], bright: [0.915, 0.055], pale: [0.945, 0.04], lit: [0.972, 0.02] },
+  }, // minΔE 0.125 vs special
 };
 
 export const ACTIVE = 'azur';
