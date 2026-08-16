@@ -48,7 +48,7 @@ export const THEMES = {
   lima: { name: 'Lima', accentHue: 110 }, //    minΔE 0.122 vs success
 };
 
-export const ACTIVE = 'ember';
+export const ACTIVE = 'fucsia';
 
 // ── States (shared by every theme) ──────────────────────────────────────────
 // Each answers "what happened". None may be confused with any theme's accent,

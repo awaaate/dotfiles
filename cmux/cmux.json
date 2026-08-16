@@ -1,8 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/data/cmux.schema.json",
   "schemaVersion": 1,
-  "paneBorderColor": "#433935",
-  "activePaneBorderColor": "#f5810f",
+  "paneBorderColor": "#3f3941",
+  "activePaneBorderColor": "#e077d8",
   "app": {
     "appearance": "dark",
     "appIcon": "dark",
@@ -59,12 +59,12 @@
   },
   "workspaceColors": {
     "indicatorStyle": "washRail",
-    "selectionColor": "#401d00",
+    "selectionColor": "#3a1938",
     "notificationBadgeColor": "#f1bf4e",
     "colors": {
-      "Ember": "#e98940",
-      "Rose": "#df7ec1",
+      "Fucsia": "#d781cf",
       "Red": "#f27c7b",
+      "Ember": "#e98940",
       "Amber": "#ce9c0f",
       "Lime": "#99b13b",
       "Green": "#57bd72",
@@ -73,13 +73,13 @@
       "Sky": "#00b5e4",
       "Blue": "#71a3ff",
       "Iris": "#ba8bed",
-      "Slate": "#5d534f"
+      "Slate": "#59535b"
     }
   },
   "sidebarAppearance": {
     "matchTerminalBackground": true,
-    "tintColor": "#19120f",
-    "darkModeTintColor": "#19120f",
+    "tintColor": "#161218",
+    "darkModeTintColor": "#161218",
     "lightModeTintColor": null,
     "tintOpacity": 0.18
   },
