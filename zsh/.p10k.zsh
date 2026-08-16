@@ -39,13 +39,13 @@
   local magenta=5
   local cyan=6
   local white=7
-  # Iris accent. ANSI index 5, not a literal 256-colour index: the Iris
+  # Ember accent. ANSI index 5, not a literal 256-colour index: the Ember
   # terminal palette maps magenta to the accent
-  # (~/.config/ghostty/themes/iris → `palette = 5=#be84fb`), so the prompt
+  # (~/.config/ghostty/themes/ember → `palette = 5=#f5810f`), so the prompt
   # tracks the theme instead of pinning a hex that will drift the next time
   # the accent moves. The previous value was 209 (coral #ff7a6b), which sat in
   # the same red-orange band as the error colour — see docs/DESIGN.md.
-  local iris=$magenta   # ANSI 5 → #be84fb
+  local ember=$magenta   # ANSI 5 → #f5810f
 
   # Left prompt segments.
   typeset -g POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(
@@ -84,7 +84,7 @@
 
   # Iris-accent prompt symbol if the last command succeeded. The prompt char is
   # the caret you type at — it is FOCUS, which is exactly what the accent means.
-  typeset -g POWERLEVEL9K_PROMPT_CHAR_OK_{VIINS,VICMD,VIVIS}_FOREGROUND=$iris
+  typeset -g POWERLEVEL9K_PROMPT_CHAR_OK_{VIINS,VICMD,VIVIS}_FOREGROUND=$ember
   # Red prompt symbol if the last command failed. Unchanged: a failed exit code
   # is a STATUS, and status is never the accent's job.
   typeset -g POWERLEVEL9K_PROMPT_CHAR_ERROR_{VIINS,VICMD,VIVIS}_FOREGROUND=$red
@@ -104,7 +104,7 @@
   typeset -g POWERLEVEL9K_VIRTUALENV_{LEFT,RIGHT}_DELIMITER=
 
   # Iris-accent current directory: "where am I" is identity, not status.
-  typeset -g POWERLEVEL9K_DIR_FOREGROUND=$iris
+  typeset -g POWERLEVEL9K_DIR_FOREGROUND=$ember
 
   # Context format when root: user@host. The first part white, the rest grey.
   typeset -g POWERLEVEL9K_CONTEXT_ROOT_TEMPLATE="%F{$white}%n%f%F{$grey}@%m%f"

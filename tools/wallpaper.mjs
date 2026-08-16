@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Renders the Iris wallpapers straight to PNG.
+// Renders the active theme's wallpapers straight to PNG.
 //
 //   node tools/wallpaper.mjs
 //
@@ -15,7 +15,8 @@ import { deflateSync } from 'node:zlib';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { oklch, hexToOklch } from './color.mjs';
+import { oklch, hexToOklch, hex } from './color.mjs';
+import { meta } from './tokens.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -138,18 +139,36 @@ function render(width, height, opts) {
 }
 
 // ── Variants ────────────────────────────────────────────────────────────────
-// Calibrated against ink[0] (#0a090f), the app background. The bloom peaks
-// slightly ABOVE it (~25,17,40) and the far corners fall slightly below it
-// (~10,11,20). That is the point: app windows are almost black, so a desktop
+// Derived from the ACTIVE theme in tools/tokens.mjs, so the desktop always
+// belongs to the same identity as everything else. Only the hues come from
+// the theme; the OKLCH lightness/chroma stops are constants measured off the
+// original hand-tuned iris wallpaper, preserved exactly:
+//   field  = the theme's ink cast, slightly below ink[0]
+//   bloomA = the accent hue, peaking slightly ABOVE ink[0]
+//   bloomB = a secondary bloom 30° past the accent, for depth
+// That relationship is the point: app windows are almost black, so a desktop
 // that were uniformly darker still would leave window edges invisible without
-// a border. A gentle violet field gives every window a legible edge on the
+// a border. A gentle in-family field gives every window a legible edge on the
 // bloom side while the corners stay deep enough that the screen never reads
 // as bright.
 // Amplitude is deliberately tiny. At the bloom's brightest the lift over the
 // field is ~13/255 — enough to give the screen depth, not enough for any point
 // on the desktop to out-brighten a terminal window sitting on top of it.
-const DARK = { field: '#08070d', bloomA: '#191128', bloomB: '#0c1020', grain: 0.0045 };
-const LIGHT = { field: '#f5f3f8', bloomA: '#e9dff6', bloomB: '#e2e7f3', grain: 0.003 };
+const HA = meta.accentHue;
+const HB = (meta.accentHue + 30) % 360;
+const HI = meta.inkHue;
+const DARK = {
+  field: hex(0.134, 0.014, HI),
+  bloomA: hex(0.201, 0.046, HA),
+  bloomB: hex(0.178, 0.034, HB),
+  grain: 0.0045,
+};
+const LIGHT = {
+  field: hex(0.967, 0.007, HI),
+  bloomA: hex(0.918, 0.033, HA),
+  bloomB: hex(0.928, 0.017, HB),
+  grain: 0.003,
+};
 
 const TARGETS = [
   ['dark', DARK, 3024, 1964], // built-in XDR panel
@@ -162,7 +181,7 @@ const TARGETS = [
 mkdirSync(join(ROOT, 'wallpapers'), { recursive: true });
 for (const [variant, opts, w, h] of TARGETS) {
   const png = encodePng(w, h, render(w, h, opts));
-  const rel = `wallpapers/iris-${variant}-${w}x${h}.png`;
+  const rel = `wallpapers/${meta.slug}-${variant}-${w}x${h}.png`;
   writeFileSync(join(ROOT, rel), png);
   console.log(`  wrote  ${rel.padEnd(42)} ${(png.length / 1024).toFixed(0)} KB`);
 }

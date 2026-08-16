@@ -103,8 +103,8 @@ cat <<'NEXT'
 ==> next steps (not automated on purpose)
 
   Wallpaper — pick the resolution for your display:
-    cp wallpapers/iris-dark-3024x1964.png ~/Pictures/
-    osascript -e 'tell application "System Events" to set picture of every desktop to "'"$HOME"'/Pictures/iris-dark-3024x1964.png"'
+    cp wallpapers/ember-dark-3024x1964.png ~/Pictures/
+    osascript -e 'tell application "System Events" to set picture of every desktop to "'"$HOME"'/Pictures/ember-dark-3024x1964.png"'
 
   CmuxDock (optional, macOS notch indicator):
     (cd swift/CmuxDock && ./build.sh --install)

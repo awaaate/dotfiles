@@ -1,6 +1,7 @@
 # dotfiles
 
-Configuración de macOS con una identidad visual oscura y acento **iris** `#be84fb`.
+Configuración de macOS con una identidad visual oscura y **cinco temas conmutables**.
+El activo es **ember** `#f5810f`; ver [Temas](#temas).
 
 El sistema de diseño completo, con la justificación de cada decisión, está en
 [`docs/DESIGN.md`](docs/DESIGN.md). El estado previo al rediseño y los problemas encontrados
@@ -26,10 +27,10 @@ El acento responde a *dónde estoy / qué está activo*. Verde, ámbar, rojo y t
 | `.aerospace.toml` | Tiling window manager |
 | `borders/` | Anillo de foco de ventana (nivel 1 de 3) |
 | `cmux/` | Interfaz, paneles, sidebar y workspaces |
-| `ghostty/` | Terminal + `themes/iris` (generado) |
+| `ghostty/` | Terminal + `themes/ember` (generado) |
 | `karabiner/` | Remapeo de teclado (sin cambios en este rediseño) |
 | `nvim/` | Neovim (**sin cambios** — ver limitaciones) |
-| `pi/` | Tema iris y extensiones globales |
+| `pi/` | Tema ember y extensiones globales |
 | `sketchybar/` | Barra de estado |
 | `wallpapers/` | Fondos generados, dark y light |
 | `zsh/` | Shell + prompt Powerlevel10k |
@@ -39,8 +40,8 @@ El acento responde a *dónde estoy / qué está activo*. Verde, ámbar, rojo y t
 `tools/tokens.mjs` es la **única fuente de verdad** del color. `tools/build.mjs` genera desde ahí:
 
 ```
-pi/themes/iris.json      ghostty/themes/iris      cmux/cmux.json
-sketchybar/colors.sh     borders/bordersrc
+pi/themes/<tema>.json     ghostty/themes/<tema>     cmux/cmux.json
+sketchybar/colors.sh      borders/bordersrc
 ```
 
 Esos archivos llevan cabecera `GENERATED`. **No los edites a mano**: se sobreescriben. Para
@@ -54,6 +55,31 @@ en lugar de editar hace esa deriva imposible por construcción.
 node tools/build.mjs          # regenerar configs
 node tools/wallpaper.mjs      # regenerar fondos
 ```
+
+## Temas
+
+Un tema son **dos hues**: el acento y el matiz de los neutros (acento − 13°). Todo lo demás —
+paradas de luminosidad, colores de estado, superficies teñidas — es idéntico entre temas, así que
+cambiar de tema jamás cambia lo que un color *significa*, solo el aspecto de la identidad.
+
+| Tema | Hue | Acento | ΔE mín vs estados | Carácter |
+|---|---|---|---|---|
+| **ember** (activo) | 55° | `#f5810f` | 0.128 (error) | fuego, neutros tostados |
+| fucsia | 330° | `#e077d8` | 0.171 (special) | el máximo margen del círculo |
+| iris | 305° | `#be84fb` | 0.120 (special) | el original del rediseño |
+| rosa | 348° | `#f171b8` | 0.130 (error) | chicle, cálido |
+| lima | 110° | `#abac00` | 0.122 (success) | fósforo ácido retro |
+
+Para cambiar: edita `ACTIVE` en `tools/tokens.mjs` y regenera. `build.mjs` reapunta él mismo
+`theme =` en `ghostty/config` y `"theme"` en `pi/settings.json`; los temas de ghostty y pi se
+generan para los cinco y conviven por nombre, el resto de archivos lleva solo el activo.
+
+```bash
+node tools/build.mjs && node tools/wallpaper.mjs && ./install.sh
+```
+
+`check-contrast.mjs` valida los gates de identidad de **todos** los temas en cada corrida,
+también los inactivos — un candidato no puede pudrirse en la tabla sin que el build falle.
 
 ## Instalación
 

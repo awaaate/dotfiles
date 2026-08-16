@@ -23,6 +23,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
+import { meta } from './tokens.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
@@ -52,7 +53,7 @@ console.log(`\n── pi ${pkg.version} ${'─'.repeat(58)}`);
   );
   const schema = JSON.parse(readFileSync(schemaPath, 'utf8'));
   const valid = new Set(Object.keys(schema.properties.colors.properties));
-  const theme = JSON.parse(readFileSync(join(ROOT, 'pi/themes/iris.json'), 'utf8'));
+  const theme = JSON.parse(readFileSync(join(ROOT, `pi/themes/${meta.slug}.json`), 'utf8'));
   const mine = Object.keys(theme.colors);
 
   const extra = mine.filter((k) => !valid.has(k));

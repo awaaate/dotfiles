@@ -45,9 +45,9 @@ unset _zcompdump _zcompdump_fresh _f
 
 # ── Completion menu — Iris ──────────────────────────────────────────────────
 # Colours address the ANSI palette by INDEX, never by hex, so they track
-# ~/.config/ghostty/themes/iris automatically:
+# ~/.config/ghostty/themes/ember automatically:
 #   1 red #f24e56 · 2 green #67d283 · 3 amber #f1bf4e · 4 blue #8bafff
-#   5 iris #be84fb · 6 teal #4fcdcd · 7 muted #9e9da5 · 8 border #55545d
+#   5 ember #f5810f · 6 teal #4fcdcd · 7 muted #a59c99 · 8 border #5d534f
 #
 # The accent is reserved for exactly one thing here: the entry under the
 # cursor (`ma`), because that is FOCUS. File kinds are merely different, not
@@ -176,7 +176,7 @@ export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_ALT_C_COMMAND="fd --type d --hidden --follow --exclude .git"
 
 # ── fzf — Iris ──────────────────────────────────────────────────────────────
-#   prompt / pointer / spinner  accent #be84fb — your input and the cursor are
+#   prompt / pointer / spinner  accent #f5810f — your input and the cursor are
 #                               FOCUS, which is the one thing the accent means.
 #   hl / hl+                    amber  #f1bf4e — a match is transient STATUS,
 #                               not identity, so it must not take the accent
@@ -185,18 +185,18 @@ export FZF_ALT_C_COMMAND="fd --type d --hidden --follow --exclude .git"
 #   fg+                         #f0eff3 textBright.
 #   marker                      #67d283 green — a confirmed multi-select.
 #   info                        #4fcdcd teal — the neutral match counter.
-#   border/separator            #55545d / #3c3a44.
-#   header                      #74737c textDim — recedes behind the list.
+#   border/separator            #5d534f / #433935.
+#   header                      #7c726f textDim — recedes behind the list.
 #   bg / gutter = -1            inherit the terminal, which the Iris Ghostty
-#                               theme already sets to bgBase #0a090f. Keeping
+#                               theme already sets to bgBase #0f0907. Keeping
 #                               it adaptive means fzf never paints a mismatched
 #                               rectangle if the surface changes.
 export FZF_DEFAULT_OPTS="
   --color=fg:#cccbd1,bg:-1,hl:#f1bf4e
   --color=fg+:#f0eff3,bg+:#2a2932,hl+:#f1bf4e
-  --color=info:#4fcdcd,prompt:#be84fb,pointer:#be84fb,spinner:#be84fb
-  --color=marker:#67d283,header:#74737c,border:#55545d,separator:#3c3a44
-  --color=gutter:-1,label:#9e9da5,query:#f0eff3
+  --color=info:#4fcdcd,prompt:#f5810f,pointer:#f5810f,spinner:#f5810f
+  --color=marker:#67d283,header:#7c726f,border:#5d534f,separator:#433935
+  --color=gutter:-1,label:#a59c99,query:#f0eff3
 "
 bindkey -v
 alias help-cli='~/productivity-help.sh'

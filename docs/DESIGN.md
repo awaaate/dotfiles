@@ -1,4 +1,4 @@
-# Iris — design system
+# Ember — design system
 
 A single visual language across cmux, Ghostty, pi, Neovim, Sketchybar, JankyBorders,
 AeroSpace and the desktop.
@@ -40,13 +40,14 @@ and a failing test were nearly the same colour.
 
 **One accent, one neutral family, hues chosen by measurement rather than taste.**
 
-The status hues are effectively reserved — amber 85°, green 150°, teal 195°, red 22°. That leaves the
-blue-violet arc as the only region with real headroom, so the accent is **iris violet, `#be84fb`,
-OKLCH hue 305°**. It sits ~0.25 ΔE from error (nearly double coral's separation), and it is the one
-accent that never appears in a diff, a test result, or a git status — so it cannot collide with meaning.
+The status hues are effectively reserved — amber 85°, green 150°, teal 195°, red 22°. The accent is
+**ember orange, `#f5810f`, OKLCH hue 55°** — chosen by preference for warmth, then checked: a full-wheel
+sweep at the accent's L/C shows 55° clears every gate, at 0.128 ΔE from error and 0.140 from warning.
+Identity now lives in the warm band, between the two warm states; `check-contrast.mjs` is what keeps
+that margin from ever regressing silently.
 
-The neutral ramp shares the accent's hue family (292°) at very low chroma. The substrate agrees with the
-accent instead of fighting it, and the violet looks chosen rather than dropped on top.
+The neutral ramp shares the accent's hue family (42°) at very low chroma. The substrate agrees with the
+accent instead of fighting it, and the ember looks chosen rather than dropped on top.
 
 Colour is authored in **OKLCH**, not hex, so lightness steps are perceptually even. `hex()` gamut-maps by
 reducing chroma while holding L and H, which keeps a ramp even after clipping.
@@ -79,33 +80,33 @@ category and carries no status meaning. There, the accent marks functions.
 
 | Token | Hex | Job |
 |---|---|---|
-| `ink[0]` | `#0a090f` | terminal bg, app bg |
-| `ink[1]` | `#14131a` | sidebar, statusline, tab bar |
-| `ink[2]` | `#1e1d25` | floats, popups, tool-call blocks |
-| `ink[3]` | `#2a2932` | selection, hover, active row |
-| `ink[4]` | `#3c3a44` | indent guides, subtle dividers |
-| `ink[5]` | `#55545d` | pane dividers, inactive edges |
-| `ink[6]` | `#74737c` | comments, timestamps, disabled |
-| `ink[7]` | `#9e9da5` | secondary text, labels, tool output |
-| `ink[8]` | `#cccbd1` | body text |
-| `ink[9]` | `#f0eff3` | headings, cursor, emphasis |
+| `ink[0]` | `#0f0907` | terminal bg, app bg |
+| `ink[1]` | `#19120f` | sidebar, statusline, tab bar |
+| `ink[2]` | `#241c19` | floats, popups, tool-call blocks |
+| `ink[3]` | `#312824` | selection, hover, active row |
+| `ink[4]` | `#433935` | indent guides, subtle dividers |
+| `ink[5]` | `#5d534f` | pane dividers, inactive edges |
+| `ink[6]` | `#7c726f` | comments, timestamps, disabled |
+| `ink[7]` | `#a59c99` | secondary text, labels, tool output |
+| `ink[8]` | `#d1cac8` | body text |
+| `ink[9]` | `#f3efed` | headings, cursor, emphasis |
 
 ### Accent — hue 305°
 
 | Token | Hex | Job |
 |---|---|---|
-| `accent.wash` | `#301d43` | background of a selected-and-focused row |
-| `accent.deep` | `#663e8e` | inactive-but-owned edges, quote bars |
-| `accent.dim` | `#9d69d2` | secondary accent text, operators |
-| `accent.base` | `#be84fb` | **the** accent — focus ring, active pane, cursor |
-| `accent.bright` | `#d8b8ff` | hover, headings |
-| `accent.pale` | `#e8d7ff` | reasoning-effort ramp, upper stop |
-| `accent.lit` | `#f5eeff` | reasoning-effort ramp, top stop |
+| `accent.wash` | `#401d00` | background of a selected-and-focused row |
+| `accent.deep` | `#834100` | inactive-but-owned edges, quote bars |
+| `accent.dim` | `#ca6800` | secondary accent text, operators |
+| `accent.base` | `#f5810f` | **the** accent — focus ring, active pane, cursor |
+| `accent.bright` | `#ffb685` | hover, headings |
+| `accent.pale` | `#ffd6bc` | reasoning-effort ramp, upper stop |
+| `accent.lit` | `#ffeee3` | reasoning-effort ramp, top stop |
 
 The last two exist so the reasoning-effort scale can climb past the accent without leaving its hue. It
 used to end in amber and yellow, which reads as a change of *kind* rather than of degree — and with
-`xhigh` as the default it was not a ramp at all, just a permanently warm dot in an otherwise violet
-interface. `check-contrast.mjs` now asserts the ramp climbs in lightness at every step and stays within
+`xhigh` as the default it was not a ramp at all, just a permanently warm dot pretending to be a state.
+With a warm accent the ramp stays in-family by construction. `check-contrast.mjs` now asserts the ramp climbs in lightness at every step and stays within
 5° of hue.
 
 ### Status
@@ -145,7 +146,7 @@ hue moves: `tint(85)` pending, `tint(150)` success, `tint(22)` error, `tint(265)
 
 For things that are merely *different*, not better or worse — cmux workspaces only. Even hue spacing at
 fixed L 0.72 / C 0.145, so no workspace looks more urgent than another just because of the colour it drew.
-Twelve entries: Iris, Rose, Red, Ember, Amber, Lime, Green, Jade, Teal, Sky, Blue, plus a colourless Slate.
+Twelve entries: Ember, Rose, Red, Amber, Lime, Green, Jade, Teal, Sky, Blue, Iris, plus a colourless Slate.
 
 ---
 

@@ -11,10 +11,13 @@
 import { writeFileSync, readFileSync, mkdirSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import {
-  ink, accent, state, surfaceTint, semantic, ansi, categorical, bgChrome, stateOnChrome, meta,
-} from './tokens.mjs';
+import { THEMES, ACTIVE, makeTheme, state, surfaceTint, stateOnChrome } from './tokens.mjs';
 import { argb, bare, hex } from './color.mjs';
+
+// Single-file outputs (sketchybar, borders, cmux, swift) carry ONE theme: the
+// active one. Per-slug outputs (ghostty/themes/*, pi/themes/*) are emitted for
+// EVERY theme so they coexist and switching is just re-pointing a name.
+const { ink, accent, semantic, ansi, categorical, bgChrome, meta } = makeTheme(ACTIVE);
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CHECK = process.argv.includes('--check');
@@ -25,16 +28,23 @@ function emit(relPath, content) {
   out.push({ relPath, content });
 }
 
-// ── pi theme ────────────────────────────────────────────────────────────────
-// The schema is additionalProperties:false with 52 valid keys, so every key
-// below is required to exist and no others may appear.
-//
-// NOTE: values are literal hex, with no `vars` indirection. pi resolves `vars`
-// at load time and a single typo in a var name silently falls back to the
-// stock dark theme with no error — the previous theme was one character away
-// from that failure because its var names shadowed token names
-// (`"borderMuted": "borderMuted"`). Generated output has no reason to indirect.
-const piTheme = {
+// ── per-theme outputs: pi + ghostty ─────────────────────────────────────────
+// One file per THEMES entry, named by slug. All of them ship; only the one
+// the configs point at is in use.
+for (const slug of Object.keys(THEMES)) {
+  const { ink, accent, semantic, ansi, meta } = makeTheme(slug);
+
+  // pi theme.
+  // The schema is additionalProperties:false, so every key below is required
+  // to exist and no others may appear.
+  //
+  // NOTE: values are literal hex, with no `vars` indirection. pi resolves
+  // `vars` at load time and a single typo in a var name silently falls back
+  // to the stock dark theme with no error — the previous theme was one
+  // character away from that failure because its var names shadowed token
+  // names (`"borderMuted": "borderMuted"`). Generated output has no reason
+  // to indirect.
+  const piTheme = {
   $schema:
     'https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/src/modes/interactive/theme/theme-schema.json',
   name: meta.slug,
@@ -56,6 +66,14 @@ const piTheme = {
     thinkingText: ink[6],
 
     selectedBg: accent.wash,
+    // Scrollbar is chrome, not identity — same tone as pane dividers.
+    scrollbarThumb: ink[5],
+    // Search answers "what did you find", which is attention, not identity:
+    // amber family, not accent. pi swaps this pair for the CURRENT match
+    // (bg ↔ text), so the two need strong mutual contrast: a quiet amber
+    // tint for every match, a bright inversion for the one under the cursor.
+    searchMatchBg: surfaceTint.pending,
+    searchMatchText: ink[9],
     userMessageBg: ink[2],
     userMessageText: ink[8],
     customMessageBg: surfaceTint.special,
@@ -114,15 +132,15 @@ const piTheme = {
 
     bashMode: state.info,
   },
-  // Only these three keys are permitted, and they affect /export HTML only.
-  export: { pageBg: ink[0], cardBg: ink[1], infoBg: ink[2] },
-};
-emit(`pi/themes/${meta.slug}.json`, JSON.stringify(piTheme, null, 2) + '\n');
+    // Only these three keys are permitted, and they affect /export HTML only.
+    export: { pageBg: ink[0], cardBg: ink[1], infoBg: ink[2] },
+  };
+  emit(`pi/themes/${meta.slug}.json`, JSON.stringify(piTheme, null, 2) + '\n');
 
-// ── ghostty theme ───────────────────────────────────────────────────────────
-// Shipped as a theme FILE rather than inline keys, so `theme = iris` in the
-// main config stays readable and the palette can be swapped atomically.
-const ghosttyTheme = `# ${BANNER}
+  // ghostty theme.
+  // Shipped as a theme FILE rather than inline keys, so `theme = <slug>` in
+  // the main config stays readable and the palette can be swapped atomically.
+  const ghosttyTheme = `# ${BANNER}
 # ${meta.name} — ${meta.appearance}
 
 palette = 0=#${bare(ansi.black)}
@@ -151,7 +169,8 @@ cursor-text = #${bare(ink[0])}
 selection-background = #${bare(accent.wash)}
 selection-foreground = #${bare(ink[9])}
 `;
-emit('ghostty/themes/' + meta.slug, ghosttyTheme);
+  emit('ghostty/themes/' + meta.slug, ghosttyTheme);
+}
 
 // ── sketchybar colours ──────────────────────────────────────────────────────
 // Variable NAMES are load-bearing: sketchybarrc and every plugin script
@@ -283,7 +302,7 @@ emit('swift/CmuxDock/Sources/IrisTokens.swift', swiftTokens);
 // rejected by `tools/check-configs.sh`.
 //
 // NOTE: cmux takes its TERMINAL palette from ~/.config/ghostty/config, not
-// from this file (`cmux themes list` confirms it resolves theme `iris` from
+// from this file (`cmux themes list` confirms it resolves theme `ember` from
 // there). So this file only styles cmux's own chrome.
 const cmux = {
   $schema: 'https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/data/cmux.schema.json',
@@ -432,8 +451,37 @@ emit('cmux/cmux.json', JSON.stringify(cmux, null, 2) + '\n');
 // Rendered by tools/wallpaper.mjs, not here: this machine has no working SVG
 // rasteriser, so the wallpapers are drawn pixel-by-pixel instead.
 
+// ── active-theme references in hand-maintained files ────────────────────────
+// ghostty/config and pi/settings.json NAME the active theme. They are not
+// generated (they carry hand-written decisions), but the one line that names
+// the theme must follow ACTIVE or a switch silently half-applies: the build
+// patches that line in write mode and treats a mismatch as stale in --check.
+const REFS = [
+  { relPath: 'ghostty/config', re: /^theme = .+$/m, want: `theme = ${meta.slug}` },
+  { relPath: 'pi/settings.json', re: /"theme": "[^"]+"/, want: `"theme": "${meta.slug}"` },
+];
+
 // ── write / check ───────────────────────────────────────────────────────────
 let stale = 0;
+for (const { relPath, re, want } of REFS) {
+  const abs = join(ROOT, relPath);
+  const current = readFileSync(abs, 'utf8');
+  const m = current.match(re);
+  if (!m) {
+    console.log(`  FAIL   ${relPath}: no theme reference matching ${re}`);
+    stale++;
+    continue;
+  }
+  if (m[0] === want) {
+    console.log(`  ok     ${relPath} → ${want}`);
+  } else if (CHECK) {
+    console.log(`  STALE  ${relPath}: "${m[0]}" should be "${want}"`);
+    stale++;
+  } else {
+    writeFileSync(abs, current.replace(re, want));
+    console.log(`  patched  ${relPath} → ${want}`);
+  }
+}
 for (const { relPath, content } of out) {
   const abs = join(ROOT, relPath);
   const current = existsSync(abs) ? readFileSync(abs, 'utf8') : null;

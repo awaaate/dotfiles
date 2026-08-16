@@ -7,7 +7,9 @@
 
 import { readFileSync } from 'node:fs';
 import { contrast, deltaEOk, hexToOklch } from './color.mjs';
-import { ink, accent, state, semantic, ansi, bgChrome, stateOnChrome } from './tokens.mjs';
+import {
+  ink, accent, state, semantic, ansi, bgChrome, stateOnChrome, THEMES, makeTheme,
+} from './tokens.mjs';
 
 let failures = 0;
 const rows = [];
@@ -150,6 +152,28 @@ console.log('\n── reasoning-effort ramp ' + '─'.repeat(51));
 }
 console.log(rows.splice(0).join('\n'));
 
+// ── Every theme passes the identity gates ───────────────────────────────────
+// The full suite above runs on the ACTIVE theme. What varies between themes
+// is the accent (and the near-neutral cast, whose lightness stops are shared
+// constants), so each THEMES entry is held to the theme-dependent gates here
+// — including the inactive ones, so a candidate can never rot in the table.
+console.log('\n── every theme (active and not) ' + '─'.repeat(44));
+for (const slug of Object.keys(THEMES)) {
+  const t = makeTheme(slug);
+  const tag = (s) => `[${slug}] ${s}`;
+  // Identity must never be mistaken for failure or attention.
+  gate(tag('accent.base vs error'), deltaEOk(t.accent.base, state.error), 0.1, 'ΔE');
+  gate(tag('accent.bright vs error'), deltaEOk(t.accent.bright, state.error), 0.1, 'ΔE');
+  gate(tag('accent.base vs warning'), deltaEOk(t.accent.base, state.warning), 0.1, 'ΔE');
+  // The accent's day jobs: focus ring (non-text, 3:1) and accent text (4.5:1).
+  gate(tag('accent.base on bgBase'), contrast(t.accent.base, t.semantic.bgBase), 4.5);
+  gate(tag('accent.bright on bgAccent'), contrast(t.accent.bright, t.semantic.bgAccent), 4.5);
+  gate(tag('borderFocus on bgRaised'), contrast(t.semantic.borderFocus, t.semantic.bgRaised), 3.0);
+  // Body text must stay AAA on the theme's own surfaces.
+  gate(tag('text on bgBase'), contrast(t.semantic.text, t.semantic.bgBase), 7.0);
+}
+console.log(rows.splice(0).join('\n'));
+
 // ── Documentation drift ─────────────────────────────────────────────────────
 // The configs are generated, so they cannot drift — but the docs are written
 // by hand and quote hex values, and they DID drift once: DESIGN.md carried an
@@ -157,11 +181,16 @@ console.log(rows.splice(0).join('\n'));
 // resolve to a real token.
 console.log('\n── documented hex values match tokens ' + '─'.repeat(38));
 {
-  const known = new Set(
-    [...Object.values(ink), ...Object.values(accent), ...Object.values(state)].map((h) =>
-      h.toLowerCase(),
-    ),
-  );
+  // The union across ALL themes: docs may legitimately quote any theme's
+  // values (DESIGN.md describes the active one, but a comparison table can
+  // cite a candidate), and switching ACTIVE must not invalidate the docs.
+  const known = new Set(Object.values(state).map((h) => h.toLowerCase()));
+  for (const slug of Object.keys(THEMES)) {
+    const t = makeTheme(slug);
+    for (const h of [...Object.values(t.ink), ...Object.values(t.accent)]) {
+      known.add(h.toLowerCase());
+    }
+  }
   const docsDir = new URL('../docs/', import.meta.url);
   let stale = 0;
   for (const file of ['DESIGN.md', 'AUDIT.md']) {
