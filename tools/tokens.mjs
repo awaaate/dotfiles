@@ -64,6 +64,11 @@ export const THEMES = {
     accentHue: 250,
     stops: { base: [0.87, 0.1], bright: [0.915, 0.055], pale: [0.945, 0.04], lit: [0.972, 0.02] },
   }, // minΔE 0.125 vs special
+  // Mustard / old gold. The WARM edge of the green corridor: warning (85°)
+  // on one side and success (150°) on the other leave only 95°-120° open,
+  // and this one sits at the yellow end of it. Reads as olive, not green —
+  // true green (140°-170°) is unreachable because success already lives there.
+  mostaza: { name: 'Mostaza', accentHue: 95 }, // minΔE 0.113 vs warning
 };
 
 export const ACTIVE = 'azur';
