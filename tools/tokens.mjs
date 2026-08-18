@@ -46,6 +46,11 @@ export const THEMES = {
   rosa: { name: 'Rosa', accentHue: 348 }, //    minΔE 0.130 vs error
   // Acid chartreuse, terminal-phosphor retro. Best contrast of the set.
   lima: { name: 'Lima', accentHue: 110 }, //    minΔE 0.122 vs success
+  // Mustard / old gold. The WARM edge of the green corridor: warning (85°)
+  // on one side and success (150°) on the other leave only 95°-120° open,
+  // and this one sits at the yellow end of it. Reads as olive, not green —
+  // true green (140°-170°) is unreachable because success already lives there.
+  mostaza: { name: 'Mostaza', accentHue: 95 }, // minΔE 0.113 vs warning
 };
 
 export const ACTIVE = 'fucsia';
