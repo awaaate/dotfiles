@@ -10,7 +10,7 @@
 # colour: the previous config set cursor-color and selection-background inline,
 # which silently beat the theme and made the real palette impossible to read
 # off the file.
-theme = fucsia
+theme = azur
 
 # ───────────────────────────────────────────────────────────────────────────
 # FONT

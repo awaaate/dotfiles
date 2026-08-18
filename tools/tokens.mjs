@@ -46,6 +46,24 @@ export const THEMES = {
   rosa: { name: 'Rosa', accentHue: 348 }, //    minΔE 0.130 vs error
   // Acid chartreuse, terminal-phosphor retro. Best contrast of the set.
   lima: { name: 'Lima', accentHue: 110 }, //    minΔE 0.122 vs success
+  // The ONLY viable blue. At the standard accent lightness the whole
+  // 195°-265° arc belongs to info (teal) and special (blue): a numeric
+  // search over (hue, L, C) against every gate found a single pocket,
+  // cyan-azure at 225° with the base dropped to L 0.68 — the darkest the
+  // 4.5:1 text gate allows on bgBase. Deeper blues cannot exist under this
+  // system without redesigning the state colours themselves.
+  azur: { name: 'Azur', accentHue: 225, stops: { base: [0.68, 0.16] } }, // minΔE 0.117 vs special
+  // The SECOND blue pocket, opposite the first: where azur ducks UNDER the
+  // state colours in lightness, cielo floats ABOVE them — powder blue at
+  // L 0.87, where distance from info/special comes from lightness rather
+  // than hue. sRGB clips chroma hard up there (~0.066 effective), so the
+  // accent is soft by construction. base moves the top of the ramp with it:
+  // bright/pale/lit are lifted so the effort scale still climbs.
+  cielo: {
+    name: 'Cielo',
+    accentHue: 250,
+    stops: { base: [0.87, 0.1], bright: [0.915, 0.055], pale: [0.945, 0.04], lit: [0.972, 0.02] },
+  }, // minΔE 0.125 vs special
   // Mustard / old gold. The WARM edge of the green corridor: warning (85°)
   // on one side and success (150°) on the other leave only 95°-120° open,
   // and this one sits at the yellow end of it. Reads as olive, not green —
@@ -53,7 +71,7 @@ export const THEMES = {
   mostaza: { name: 'Mostaza', accentHue: 95 }, // minΔE 0.113 vs warning
 };
 
-export const ACTIVE = 'fucsia';
+export const ACTIVE = 'azur';
 
 // ── States (shared by every theme) ──────────────────────────────────────────
 // Each answers "what happened". None may be confused with any theme's accent,
@@ -153,21 +171,31 @@ export function makeTheme(slug) {
   // Identity. One hue, seven stops. `base` is THE accent; everything else
   // exists so hover, borders and washes stay in-family instead of reaching
   // for a new colour.
-  const accent = {
-    // Sits just below ink[3] in lightness with noticeably more chroma, so a
-    // selected-and-focused row reads as "same elevation, the accent owns it"
-    // while still clearing 3:1 against textDim.
-    wash: hex(0.275, 0.070, H_ACCENT), //   tinted bg behind selected items
-    deep: hex(0.450, 0.130, H_ACCENT), //   inactive-but-owned edges, underlines
-    dim: hex(0.620, 0.160, H_ACCENT), //    secondary accent text, muted borders
-    base: hex(0.720, 0.175, H_ACCENT), //   THE accent — focus ring, active pane, cursor
-    bright: hex(0.835, 0.120, H_ACCENT), // hover, headings, emphasis-on-accent
-    // Two more stops above `bright`, so an intensity ramp can climb past the
+  //
+  // The L/C ladder is a system default that a theme may override per-stop
+  // (def.stops) — blue hues need it, because sRGB gives them their chroma at
+  // a lower lightness than warm hues. The stops remain subject to every gate
+  // in check-contrast.mjs (ramp climbs in L, one hue, contrast floors), so an
+  // override can shift where a stop sits but never break what it guarantees.
+  const STOPS = {
+    // wash sits just below ink[3] in lightness with noticeably more chroma,
+    // so a selected-and-focused row reads as "same elevation, the accent
+    // owns it" while still clearing 3:1 against textDim.
+    wash: [0.275, 0.070], //   tinted bg behind selected items
+    deep: [0.450, 0.130], //   inactive-but-owned edges, underlines
+    dim: [0.620, 0.160], //    secondary accent text, muted borders
+    base: [0.720, 0.175], //   THE accent — focus ring, active pane, cursor
+    bright: [0.835, 0.120], // hover, headings, emphasis-on-accent
+    // Two stops above `bright`, so an intensity ramp can climb past the
     // accent without leaving its hue. Used by the reasoning-effort scale — a
     // hue change reads as a change of KIND, not of degree.
-    pale: hex(0.905, 0.075, H_ACCENT),
-    lit: hex(0.960, 0.035, H_ACCENT),
+    pale: [0.905, 0.075],
+    lit: [0.960, 0.035],
+    ...def.stops,
   };
+  const accent = Object.fromEntries(
+    Object.entries(STOPS).map(([name, [L, C]]) => [name, hex(L, C, H_ACCENT)]),
+  );
 
   // Chrome surface: the system bar and the notch island. Deliberately LIGHTER
   // than the border tone (ink[4], what JankyBorders draws for an inactive
